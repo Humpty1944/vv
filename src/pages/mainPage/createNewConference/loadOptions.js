@@ -19,6 +19,7 @@ axios
     }
   })
   .catch(function (error) {
+    console.log(error)
     if (error.response.status == 401) {
     }
   });

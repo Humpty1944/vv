@@ -5,7 +5,7 @@ import { AddBox, ArrowDownward } from "@material-ui/icons";
 import MUIDataTable from "mui-datatables";
 import { PromptProps } from "react-router-dom";
 import axios from "axios";
-
+import ReactLoading from "react-loading";
 const LookParticipants = (props) => {
   const columns = [
     {
@@ -40,8 +40,20 @@ const LookParticipants = (props) => {
         sort: true,
       },
     },
+   
   ];
+  const [isLoading, setIsLoading] = useState(true);
 
+  const handleLoading = () => {
+    console.log(isLoading)
+    setIsLoading(false);
+    }
+    
+    useEffect(()=>{
+      console.log(isLoading)
+    window.addEventListener("load",handleLoading);
+    return () => window.removeEventListener("load",handleLoading);
+    },[])
   const [dataUsers, setData] = useState([]);
   const [data_index, setIndexes] = useState([]);
   const showInfo = (rowData) => {
@@ -59,6 +71,12 @@ const LookParticipants = (props) => {
       return "\uFEFF" + buildHead(columns) + buildBody(data);
     },
     downloadOptions: { filename: "participants.csv", separator: ";" },
+    onRowsDelete: (rowsDeleted, dataRows) => {
+      console.log(rowsDeleted)
+      deleteRequest(rowsDeleted)
+      // const idsToDelete = dataRows.map(d => data[d.dataIndex].id); // array of all ids to to be deleted
+      // http.delete(idsToDelete, res).then(window.alert('Deleted!')); // your delete request here
+    }
   };
   const [size, setSize] = useState();
   let d = [];
@@ -66,38 +84,64 @@ const LookParticipants = (props) => {
     setSize(window.innerWidth);
   };
 
-  useEffect(() => {
-    setSize(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-  }, []);
-  useEffect(() => {
-    const api = "https://api.ezmeets.live/v1/Users/GetAll";
-    setData();
-    let token = localStorage.getItem("token");
-    try {
-      axios
-        .get(api, { headers: { Authorization: `Bearer ${token}` } })
-        .then((res) => {
-          let idd = [];
-          for (let i = 0; i < res.data.length; i++) {
-            console.log(res.data);
-            d.push({
-              fullName: res.data[i].fullName,
-              email: res.data[i].email,
-              group: res.data[i].group,
-              photo:
-                res.data[i].avatarPath === null ||
-                res.data[i].avatarPath === undefined ||
-                res.data[i].avatarPath === ""
-                  ? "НЕТ"
-                  : "ДА",
-            });
-            idd.push(res.data[i].id);
-          }
-          setData(d);
-          setIndexes(idd);
-        })
 
+
+  async function fetchData(token, id) {
+    const apiRole = "https://api.ezmeets.live/v1/Users/GetUserRole";
+    let responseRole = await axios
+                .get(apiRole, {
+                  params: {
+                    userID: id,
+                  },
+                  headers: { Authorization: `Bearer ${token}` },
+                  })
+
+                .catch(function (error) {
+                console.log(error);
+// if (error.response.status == 401) {
+//   localStorage.setItem("token", "");
+//   localStorage.setItem("date", "");
+//   // navigate("/login");
+// }
+                });
+  let res = await responseRole.data
+  console.log(res)
+  return res
+  }
+  async function deleteRequest(rowsDeleted){
+    let token = localStorage.getItem("token");
+    console.log(token)
+  
+    console.log(rowsDeleted.data[0].index);
+    for (let i=0;i<rowsDeleted.data.length;i++){
+      let idUsr = data_index[rowsDeleted.data[i].index]
+      let apiURL = "https://api.ezmeets.live/v1/Users"+ "?userID="+idUsr;
+      fetch(apiURL, {
+        method: 'DELETE',
+        headers: {
+          ContentType: "multipart/form-data",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).then((res)=>console.log(res))
+    }
+    
+    // let url = axios.delete(apiURL,
+    //   {
+    //     headers: {
+    //       Authorization:{ Authorization: `Bearer ${token}`}
+    //     }
+    //   })
+   // let res = await url;
+   // console.log(res);
+    //return urlRes;
+  }
+  async function fetchDataAll(){
+    const api = "https://api.ezmeets.live/v1/Users/GetAll";
+    //setData();
+    let token = localStorage.getItem("token");
+    let work =  await axios
+        .get(api, { headers: { Authorization: `Bearer ${token}` } })
         .catch(function (error) {
           console.log(error);
           // if (error.response.status == 401) {
@@ -106,11 +150,81 @@ const LookParticipants = (props) => {
           //   // navigate("/login");
           // }
         });
-    } catch (e) {
-      console.log(e);
-    }
+    let result = await work.data
+    console.log('result')
+    console.log(result)
+    let idd = []
+      for (let i=0;i<work.data.length;i++){
+       
+         d.push({
+              fullName:result[i].fullName,
+              email: result[i].email,
+              group: result[i].group,
+              photo:
+              result[i].avatarPath === null ||
+              result[i].avatarPath === undefined ||
+              result[i].avatarPath === ""
+                  ? "НЕТ"
+                  : "ДА",
+                 
+            });
+            idd.push(result[i].id);
+      }
+        setData(d);
+       setIndexes(idd);
+       setIsLoading(false)
+  }
+  useEffect(() => {
+    setSize(window.innerWidth);
+    window.addEventListener("resize", handleResize);
   }, []);
-  return (
+  useEffect(() => {
+    let token = localStorage.getItem("token");
+    //fetchData(token,'iddS')
+    fetchDataAll()
+    // const api = "https://api.ezmeets.live/v1/Users/GetAll";
+    // //setData();
+    // let token = localStorage.getItem("token");
+    // try {
+    //   axios
+    //     .get(api, { headers: { Authorization: `Bearer ${token}` } })
+    //     .then((res) => {
+    //       let idd = [];
+    //       for (let i = 0; i < res.data.length; i++) {
+    //         console.log(res.data);
+    //        let roleFetch = fetchData(token, res.data[i].id)
+    //         d.push({
+    //           fullName: res.data[i].fullName,
+    //           email: res.data[i].email,
+    //           group: res.data[i].group,
+    //           photo:
+    //             res.data[i].avatarPath === null ||
+    //             res.data[i].avatarPath === undefined ||
+    //             res.data[i].avatarPath === ""
+    //               ? "НЕТ"
+    //               : "ДА",
+    //               role: roleFetch
+    //         });
+    //         idd.push(res.data[i].id);
+    //       }
+    //       setData(d);
+    //       setIndexes(idd);
+    //       console.log(d)
+    //     })
+
+    //     .catch(function (error) {
+    //       console.log(error);
+    //       // if (error.response.status == 401) {
+    //       //   localStorage.setItem("token", "");
+    //       //   localStorage.setItem("date", "");
+    //       //   // navigate("/login");
+    //       // }
+    //     });
+    // } catch (e) {
+    //   console.log(e);
+    // }
+  }, []);
+  return isLoading ? (<ReactLoading type={'spin'} color="#000" />): (
     <div
       style={{
         margin: "0 auto",

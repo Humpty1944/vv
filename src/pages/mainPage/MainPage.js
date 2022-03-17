@@ -39,6 +39,15 @@ const MainPage = () => {
     setPage("FutureReport");
     setConferenceID(childData);
   };
+  const handleNewParticipantBack = (childData) => {
+    setPage("Список участников");
+   // setConferenceID(childData);
+  };
+  const handleCallbackNewConference = (childData) => {
+    setPage("Предстоящие конференции");
+   // setConferenceID(childData);
+  };
+  
   useEffect(() => {
     const api = "https://api.ezmeets.live/v1/Users/CurrentUser";
     let token = localStorage.getItem("token");
@@ -46,14 +55,17 @@ const MainPage = () => {
       axios
         .get(api, { headers: { Authorization: `Bearer ${token}` } })
         .then((res) => {
+          
           console.log(res.data.id);
           setUserName(res.data.fullName);
+          localStorage.setItem("idUser", res.data.id);
           // setUserRole("Admin");
           let api_user = "https://api.ezmeets.live/v1/Users/CurrentUserRole";
           axios
             .get(api_user, { headers: { Authorization: `Bearer ${token}` } })
             .then((res) => {
-              console.log(res.data);
+              console.log(res.data.id);
+              
               setUserRole(res.data);
               //setUserRole(res.data);
             });
@@ -74,6 +86,7 @@ const MainPage = () => {
     //   setUserID("");
     //   return <CreateNewParticipant userID={userID} />;
     // }
+    console.log(page)
     if (userRole === "User" && page === "") {
       return <Settings />;
     }
@@ -90,7 +103,7 @@ const MainPage = () => {
     }
     if (page === "Создать конференцию") {
       return (
-        <NewConference conferenceID={0} pageName={"Create"}></NewConference>
+        <NewConference conferenceID={0} pageName={"Create"} parentCallback={handleCallbackNewConference}></NewConference>
       );
     }
     if (page === "Предстоящие конференции" || page === "") {
@@ -102,7 +115,7 @@ const MainPage = () => {
       return <PastConference />;
     }
     if (page === "Добавить нового участника") {
-      return <CreateNewParticipant userID={0} pageName={"Create"} />;
+      return <CreateNewParticipant userID={0} pageName={"Create"} parentCallback={handleNewParticipantBack}/>;
     }
     if (page === "Список участников") {
       return <LookParticipants parentCallback={handleCallbackUserData} />;

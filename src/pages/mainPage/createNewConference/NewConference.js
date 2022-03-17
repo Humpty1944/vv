@@ -15,7 +15,17 @@ import { Button } from "@mui/material";
 import Box from "@mui/material/Box";
 import loadOptions from "./loadOptions";
 import axios from "axios";
+import ReactLoading from "react-loading";
 registerLocale("ru", ru);
+
+
+const buttonLabel = (pageName) => {
+  if (pageName === "Create") {
+    return "Создать";
+  } else {
+    return "Сохранить";
+  }
+};
 
 const customStyles = {
   option: (provided, state) => ({
@@ -90,8 +100,7 @@ const NewConference = (props) => {
         let res = fetch(api + "?Group=" + value[0].label, {
           method: "get",
           headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
+           
             Authorization: `Bearer ${token}`,
           },
         }).then((response) => console.log(response));
@@ -127,6 +136,7 @@ const NewConference = (props) => {
 
     let user = await response.data;
     setDate(new Date(user.startTime));
+   
     // setFullname(user.fullName);
     // setEmail(user.email);
     // setGroup(user.group);
@@ -134,15 +144,31 @@ const NewConference = (props) => {
     // setRole(roleaw);
     // setId(user.id);
   }
+
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleLoading = () => {
+    console.log(isLoading)
+    setIsLoading(false);
+    }
+    
+    useEffect(()=>{
+      console.log(isLoading)
+    window.addEventListener("load",handleLoading);
+    return () => window.removeEventListener("load",handleLoading);
+    },[])
   useEffect(() => {
     if (props.pageName === "Update") {
       let rowData = sessionStorage.getItem("fut_conf").split(",");
 
       setNameConference(rowData[0]);
       fetchData();
+      setIsLoading(false)
     } else {
       setNameConference("");
       setDate(new Date());
+      setIsLoading(false)
     }
     // setDate(sessionStorage.getItem("fut_conf_date"));
     // console.log(new Date(sessionStorage.getItem("fut_conf_date")));
@@ -153,6 +179,9 @@ const NewConference = (props) => {
     for (let i = 0; i < result.length; i++) {
       ret.push({ userID: result[i] });
     }
+    let idUser = localStorage.getItem('idUser')
+    console.log(idUser)
+    ret.push({ userID: idUser});
     return ret;
   };
   const createNewConference = () => {
@@ -160,7 +189,8 @@ const NewConference = (props) => {
     const api = "https://api.ezmeets.live/v1/Meetings/ScheduleMeeting";
     let token = localStorage.getItem("token");
     let users = creatUser();
-    console.log(users);
+    console.log("aaaaaaaa");
+    console.log(users.length);
     let res = fetch(api, {
       method: "post",
       headers: {
@@ -180,8 +210,11 @@ const NewConference = (props) => {
           alert(responseJson.title);
         } else {
           console.log(responseJson);
+          console.log('Aaaaa')
+      props.parentCallback("a");
         }
       });
+      
   };
   const updateConference = () => {
     getUserByGroup();
@@ -209,8 +242,11 @@ const NewConference = (props) => {
           alert(responseJson.title);
         } else {
           console.log(responseJson);
+          console.log('Aaaaa')
+      props.parentCallback("a");
         }
       });
+      
   };
   const buttonCreateNewConference = () => {
     if (props.pageName == "Create") {
@@ -247,7 +283,7 @@ const NewConference = (props) => {
   };
   const onClick = () => {};
 
-  return (
+  return isLoading? ((<ReactLoading type={'spin'} color="#000" />)):(
     <div>
       <div id="newConference">
         <Box
@@ -372,7 +408,7 @@ const NewConference = (props) => {
                   variant="outlined"
                   onClick={buttonCreateNewConference}
                 >
-                  Создать конференцию
+                 {buttonLabel(props.pageName)}
                 </Button>
               </FormControl>
             </Box>

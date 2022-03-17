@@ -11,11 +11,20 @@ import CheckboxLabel from "../../../../components/checkBox/CheckboxLabel";
 import { InputLabel, MenuItem, OutlinedInput, Select } from "@material-ui/core";
 import axios from "axios";
 import loadOptions from "./loadOptions";
+import { useNavigate } from "react-router-dom";
+import ReactLoading from "react-loading";
 const headerLabel = (pageName) => {
   if (pageName === "Create") {
     return "Добавить нового участника";
   } else {
     return "Изменить данные участника";
+  }
+};
+const buttonLabel = (pageName) => {
+  if (pageName === "Create") {
+    return "Добавить";
+  } else {
+    return "Сохранить";
   }
 };
 
@@ -98,6 +107,7 @@ const CreateNewParticipant = (props) => {
   const [opt, setOpt] = useState([]);
   const [roleUser, setRole] = useState("");
   const [id, setId] = useState("");
+  const navigate = useNavigate()
   const translate = (roleName) => {
     if (roleName === "User") {
       return "Участник";
@@ -117,6 +127,20 @@ const CreateNewParticipant = (props) => {
       },
     ];
   };
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleLoading = () => {
+    console.log(isLoading)
+    setIsLoading(false);
+    }
+    
+    useEffect(()=>{
+      console.log(isLoading)
+    window.addEventListener("load",handleLoading);
+    return () => window.removeEventListener("load",handleLoading);
+    },[])
+
   async function fetchData() {
     const api1 = "https://api.ezmeets.live/v1/Users/Get";
     const apiRole = "https://api.ezmeets.live/v1/Users/GetUserRole";
@@ -161,24 +185,28 @@ const CreateNewParticipant = (props) => {
       });
     let user = await response.data;
     let roleaw = await responseRole.data;
+    console.log(roleaw)
     setFullname(user.fullName);
     setEmail(user.email);
     // setGroup(user.group);
     // setValue(formValue(group));
     setRole(translate(roleaw));
     setId(user.id);
+    setIsLoading(falseghjk)
     console.log(roleaw);
   }
   useEffect(() => {
     console.log(props.pageName);
     if (props.pageName === "Update") {
       fetchData();
+     
     } else {
       setFullname("");
       setEmail("");
       setFile(null);
       setGroup([]);
       setRole("");
+      setIsLoading(false)
     }
   }, []);
   if (props.pageName === "Create") {
@@ -246,15 +274,11 @@ const CreateNewParticipant = (props) => {
       group.length > 0
     ) {
       const api = "https://api.ezmeets.live/v1/Users/Register";
-      try {
+      
         axios
           .post(api, {
             userName: email,
-            password:
-              Math.random().toString(36).slice(-4) +
-              "@" +
-              Math.floor(Math.random() * 50) +
-              Math.random().toString(36).slice(-4).toUpperCase(),
+            password: "123456Password@",
             fullName: fullname,
             email: email,
             group: group[0],
@@ -275,61 +299,116 @@ const CreateNewParticipant = (props) => {
               //navigate("/login");
             }
           });
-      } catch (e) {
-        console.log(e);
-      }
+          console.log('Aaaaa')
+          props.parentCallback("a");
     }
+    
   };
 
   const updateUser = () => {
+    console.log()
     if (
       checkEmailFinal(email) &&
       checkFullnameFinal(fullname) &&
       roleUser !== "" &&
-      roleUser !== undefined &&
-      group.length > 0
+      roleUser !== undefined 
+     
     ) {
+      let token = localStorage.getItem("token");
       const api = "https://api.ezmeets.live/v1/Users/Update";
-      try {
-        axios
-          .put(api, {
+      
+        let config = {
+          headers: { Authorization: `Bearer ${token}`, 
+        accept: 'text/plain',
+      "Content-Type":'application/json-patch+json'
+      }
+        }
+        let data = 
+          {
             id: id,
             userName: email,
             fullName: fullname,
             email: email,
             group: group[0],
-          })
+          }
+        
+        axios
+          .put(api, data,config)
           .then((res) => {
             console.log(res);
             if (file !== null) {
               addNewPhoto();
             }
+            console.log(roleUser !== "Участник")
             if (roleUser !== "Участник") {
+              console.log("aaaaaa")
               getPromotion();
             }
           })
           .catch(function (error) {
+            console.log(error)
             if (error.response.status == 401) {
               localStorage.setItem("token", "");
               localStorage.setItem("date", "");
               //navigate("/login");
             }
           });
-      } catch (e) {
-        console.log(e);
-      }
+          props.parentCallback("a");
     }
   };
   const buttonCreateNewParticipant = () => {
+    console.log(props.pageName )
     if (props.pageName === "Create") {
+      console.log("aaa")
       createUser();
     } else {
+      console.log("bbb")
       updateUser();
     }
   };
-  const getPromotion = () => {};
+  const getPromotion = () => {
+    const apiAdmin = "https://api.ezmeets.live/v1/Users/MakeAdmin"
+    const apiSuperAdmin = "https://api.ezmeets.live/v1/Users/MakeSuperAdmin"
+    let token = localStorage.getItem("token");
+    console.log('getPromotion')
+    if  (roleUser === "Модератор"){
+      axios
+      .put(apiSuperAdmin, {
+        userID: id,
+    
+      },{ headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch(function (error) {
+        if (error.response.status === 401) {
+          localStorage.setItem("token", "");
+          localStorage.setItem("date", "");
+          //navigate("/login");
+        }
+      });
+    }
+     if (roleUser==="Администратор"){
+      axios
+      .put(apiAdmin, {
+        userID: id,
+    
+      },{ headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        console.log(res);
+        
+      })
+      .catch(function (error) {
+        if (error.response.status == 401) {
+          localStorage.setItem("token", "");
+          localStorage.setItem("date", "");
+          //navigate("/login");
+        }
+    })
+     }
+  };
   const onRole = (role) => {
-    if (role == "Администратор") {
+    if (role === "Администратор") {
       return (
         <FormControl
           sx={{
@@ -382,7 +461,7 @@ const CreateNewParticipant = (props) => {
   };
   const CreatableAsyncPaginate = withAsyncPaginate(Creatable);
 
-  return (
+  return isLoading ? (<ReactLoading type={'spin'} color="#000" />): (
     <div>
       <div id="newConference">
         <Box
@@ -490,13 +569,16 @@ const CreateNewParticipant = (props) => {
                   style={{
                     width: 150,
                     marginLeft: "500px",
-                    marginBottom: "-100px",
+                    marginBottom: "-80px",
                     height: 50,
                   }}
                   variant="outlined"
                   onClick={buttonCreateNewParticipant}
-                >
-                  Создать конференцию
+                  text = "sdfsddfsfdsfsd"
+                >{
+                  buttonLabel(props.pageName)
+                }
+                 
                 </Button>
               </FormControl>
             </Box>

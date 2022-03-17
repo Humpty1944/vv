@@ -6,12 +6,18 @@ import { AddBox, ArrowDownward } from "@material-ui/icons";
 import report_img from "./report.png";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
-
+import ReactLoading from "react-loading";
 const PastConference = (props) => {
   let navigate = useNavigate();
   const showInfo = (rowData) => {
     // props.parentCallback(report_id);
+    var ind = dataUsers.findIndex((object) => {
+      return object.email === rowData[1];
+    });
+    console.log(ind)
+    console.log(data_index)
     sessionStorage.setItem("info", rowData);
+    sessionStorage.setItem("infoID", data_index[ind] );
     navigate("/report");
   };
   const options = {
@@ -26,14 +32,8 @@ const PastConference = (props) => {
   };
 
   const columns = [
-    {
-      name: "id",
-      label: "ID",
-      options: {
-        filter: false,
-        sort: true,
-      },
-    },
+  
+
     {
       name: "name",
       label: "Название",
@@ -102,6 +102,19 @@ const PastConference = (props) => {
     },
   ];
   const [size, setSize] = useState();
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleLoading = () => {
+    console.log(isLoading)
+    setIsLoading(false);
+    }
+    
+    useEffect(()=>{
+      console.log(isLoading)
+    window.addEventListener("load",handleLoading);
+    return () => window.removeEventListener("load",handleLoading);
+    },[])
   const handleResize = (e) => {
     console.log(size);
     setSize(window.innerWidth);
@@ -121,7 +134,8 @@ const PastConference = (props) => {
         .get(api, { headers: { Authorization: `Bearer ${token}` } })
         .then((res) => {
           console.log(res.data);
-          let r = res.data.filter((w) => w.hasEnded == true);
+          let r = res.data.filter((w) => new Date(w.startTime) <=new Date());
+          console.log(r)
           let d = [];
           let idd = [];
           for (let i = 0; i < r.length; i++) {
@@ -130,11 +144,13 @@ const PastConference = (props) => {
               date: r[i].started,
               participants: r[i].usersAtMeeting.length,
               report: "ДА",
+
             });
-            idd.push(r[i].id);
+            idd.push(r[i].meetingID);
           }
           setData(d);
           setIndexes(idd);
+          setIsLoading(false)
           // setFullname(res.data.fullName);
           // setEmail(res.data.email);
           // setUsername(res.data.userName);
@@ -152,7 +168,7 @@ const PastConference = (props) => {
       console.log("resdsdsads");
     }
   }, []);
-  return (
+  return isLoading ? (<ReactLoading type={'spin'} color="#000" />): (
     <div
       style={{
         margin: "0 auto",
