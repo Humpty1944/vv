@@ -1,0 +1,63 @@
+.inputField {
+  box-sizing: border-box;
+  outline: none;
+  border: solid 1px #9ac8e4;
+  border-radius: 4px;
+  color: #000000;
+  width: 22pc;
+  height: 35px;
+  padding: 12px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 1);
+}
+.oneLine {
+  padding-top: 20px;
+}
+#newConference {
+  display: flex;
+  /* justify-content: center;
+  flex-direction: column; */
+  /* flex-wrap: wrap; */
+}
+#labelParticipant {
+  font-size: smaller;
+  color: #727272;
+  margin-right: 21pc;
+}
+
+.textName {
+  display: flex;
+  justify-content: center;
+
+  margin: 0px auto;
+}
+#checkBox {
+  position: relative;
+  margin-right: 60%;
+}
+/* .datePicker {
+  width: 350px;
+  min-width: 100px;
+  height: 8px;
+  color: #565656;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  border: solid 2px #9ac8e4;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+.btn {
+  width: 100%;
+  min-width: 280px;
+  color: #565656;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  border: solid 2px #1189de;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+}
+*/

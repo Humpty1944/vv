@@ -1,0 +1,13 @@
+.futureConference {
+  width: auto;
+  height: auto;
+}
+#tableLoc {
+  margin: 0 auto;
+  margin-top: 700px;
+  width: calc(100vw / 2);
+  /* height: calc(100vh / 2); */
+  border: solid 4px #be2424;
+  position: relative;
+  overflow: auto;
+}

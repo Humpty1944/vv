@@ -1,0 +1,18 @@
+.oneLine {
+  display: flex;
+  justify-content: center;
+  padding-top: 50px;
+}
+/* #warningBox {
+  width: max-content;
+  height: 30px;
+  font-size: x-small;
+  word-wrap: break-word;
+} */
+#warningText {
+  font-size: small;
+}
+#textInfo {
+  /* margin-top: 8px; */
+  /* float: left; */
+}

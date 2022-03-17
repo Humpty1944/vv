@@ -1,0 +1,32 @@
+.infoLable {
+  white-space: pre-line;
+
+  /* width: 1pc; */
+  /* height: auto; */
+  color: rgb(185, 184, 184);
+}
+
+.centerTable {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  margin-top: 100px;
+}
+.reportPage {
+  height: 100%;
+  padding-top: 10px;
+  background-color: #173b61;
+  display: grid;
+  position: relative;
+}
+.divInfoLables {
+  background-color: #1e446d;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+    rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+  /* height: 100%; */
+  display: inline-block;
+
+  width: 450px;
+  border-radius: 8px;
+  margin: 0px auto;
+}

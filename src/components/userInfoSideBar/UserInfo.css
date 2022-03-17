@@ -1,0 +1,19 @@
+#userImg {
+  height: 40px;
+  width: 40px;
+  display: inline-block;
+  margin-left: 20px;
+  padding: 5px 0;
+}
+.userInfo {
+  white-space: nowrap;
+  width: 10px;
+  display: flex;
+}
+#userName {
+  display: inline-block;
+  margin-left: 20px;
+  margin-top: 15px;
+  padding-bottom: 0px;
+  padding: 00px 0;
+}
