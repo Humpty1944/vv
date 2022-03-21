@@ -125,7 +125,7 @@ const PastConference = (props) => {
   // const data_index = [123, 435345, 657846746, 12312, 345643, 435643];
   useEffect(() => {
     const api = "https://api.ezmeets.live/v1/Meetings/GetAll";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     try {
       axios
         .get(api, { headers: { Authorization: `Bearer ${token}` } })
@@ -134,10 +134,12 @@ const PastConference = (props) => {
 
           let d = [];
           let idd = [];
+
           for (let i = 0; i < r.length; i++) {
+            console.log(r[i].started);
             d.push({
               name: r[i].name,
-              date: r[i].started,
+              date: new Date(r[i].startTime).toLocaleString(),
               participants: r[i].usersAtMeeting.length,
               report: "ДА",
             });
@@ -152,7 +154,7 @@ const PastConference = (props) => {
         })
         .catch(function (error) {
           if (error.response.status == 403 || error.response.status == 401) {
-            localStorage.setItem("token", "");
+            sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
             navigate("/login");
           } else {

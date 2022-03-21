@@ -87,7 +87,7 @@ const FutureConference = (props) => {
   }, []);
 
   async function deleteRequest(rowsDeleted) {
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
 
     var ind = dataUsers.findIndex((object) => {
       return object.date === rowsDeleted[1] && object.name === rowsDeleted[0];
@@ -100,25 +100,24 @@ const FutureConference = (props) => {
         "?meetingID=" +
         idUsr;
       fetch(apiURL, {
-        method: "DELETE",
+        method: "delete",
         headers: {
-          ContentType: "multipart/form-data",
-          Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
       })
         .then((res) => console.log(res))
         .then((responseJson) => {
+          console.log(responseJson);
           if (
             responseJson.status === 401 ||
             responseJson.status === 404 ||
             responseJson.status === 500
           ) {
-            Popup.alert("Проверьте правльность введенных данных");
+            // Popup.alert("Проверьте правльность введенных данных");
             return;
           } else {
-            localStorage.setItem("token", responseJson.token);
-            localStorage.setItem("date", new Date(responseJson.expiration));
+            sessionStorage.setItem("token", "");
+            localStorage.setItem("date", "");
             navigate("/");
           }
         });
@@ -147,7 +146,7 @@ const FutureConference = (props) => {
     onRowsDelete: (rowsDeleted, dataRows) => {
       deleteRequest(rowsDeleted);
     },
-    selectableRows: false,
+    // selectableRows: true,
     customToolbarSelect: (selectedRows, displayData, setSelectedRows) => (
       <customToolbarSelect
         selectedRows={selectedRows}
@@ -234,14 +233,18 @@ const FutureConference = (props) => {
   const [load2, setLoad2] = useState(false);
   const [userAllowed, setUserAllowed] = useState([]);
   async function fetchAllData() {
-    const api = "https://api.ezmeets.live/v1/Meetings/GetAll";
-    let token = localStorage.getItem("token");
+    // const api = "https://api.ezmeets.live/v1/Meetings/GetAll";
+    const api = "https://api.ezmeets.live/v1/Meetings/GetScheduled";
+    let token = sessionStorage.getItem("token");
+
+    console.log(token);
     let idUser = localStorage.getItem("idUser");
+    console.log(idUser);
     let ax = await axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
       .catch(function (error) {
         if (error.response.status == 403 || error.response.status == 401) {
-          localStorage.setItem("token", "");
+          sessionStorage.setItem("token", "");
           localStorage.setItem("date", "");
           navigate("/login");
         } else {

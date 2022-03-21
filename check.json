@@ -1,0 +1,96 @@
+{
+    "meetingID": 0,
+    "isLive": true,
+    "name": "string",
+    "startTime": "2022-03-21T19:54:41.527Z",
+    "endingTime": "2022-03-21T19:54:41.527Z",
+    "hasEnded": true,
+    "allowedUsers": [
+      {
+        "_id": 0,
+        "userID": "string"
+      }
+    ],
+    "usersAtMeeting": [
+      {
+        "userAtMeetingID": 0,
+        "user": {
+          "id": "string",
+          "userName": "string",
+          "normalizedUserName": "string",
+          "email": "string",
+          "normalizedEmail": "string",
+          "emailConfirmed": true,
+          "passwordHash": "string",
+          "securityStamp": "string",
+          "concurrencyStamp": "string",
+          "phoneNumber": "string",
+          "phoneNumberConfirmed": true,
+          "twoFactorEnabled": true,
+          "lockoutEnd": "2022-03-21T19:54:41.527Z",
+          "lockoutEnabled": true,
+          "accessFailedCount": 0,
+          "avatarPath": "string",
+          "fullName": "string",
+          "group": "string",
+          "photos": [
+            "string"
+          ],
+          "userAtMeetings": [
+            "string"
+          ]
+        },
+        "camStatuses": [
+          {
+            "camStatusID": 0,
+            "name": 0,
+            "userAtMeeting": "string"
+          }
+        ],
+        "meeting": "string",
+        "onlineStatus": "string",
+        "connectionLogs": [
+          {
+            "connectionLogID": 0,
+            "userAtMeeting": "string",
+            "dateTime": "2022-03-21T19:54:41.527Z",
+            "action": "string"
+          }
+        ]
+      }
+    ],
+    "photos": [
+      {
+        "photoID": 0,
+        "path": "string",
+        "shot": "2022-03-21T19:54:41.527Z",
+        "meeting": "string",
+        "user": {
+          "id": "string",
+          "userName": "string",
+          "normalizedUserName": "string",
+          "email": "string",
+          "normalizedEmail": "string",
+          "emailConfirmed": true,
+          "passwordHash": "string",
+          "securityStamp": "string",
+          "concurrencyStamp": "string",
+          "phoneNumber": "string",
+          "phoneNumberConfirmed": true,
+          "twoFactorEnabled": true,
+          "lockoutEnd": "2022-03-21T19:54:41.528Z",
+          "lockoutEnabled": true,
+          "accessFailedCount": 0,
+          "avatarPath": "string",
+          "fullName": "string",
+          "group": "string",
+          "photos": [
+            "string"
+          ],
+          "userAtMeetings": [
+            "string"
+          ]
+        }
+      }
+    ]
+  }

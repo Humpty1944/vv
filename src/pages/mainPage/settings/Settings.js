@@ -7,7 +7,50 @@ import axios from "axios";
 import Popup from "react-popup";
 import ImageUploader from "react-images-upload";
 import { NavLink, useNavigate } from "react-router-dom";
+import { withAsyncPaginate } from "react-select-async-paginate";
+import Creatable from "react-select/creatable";
+const customStyles = {
+  option: (provided, state) => ({
+    // ...provided,
 
+    color: "black",
+    //background:  state.isFocused? "#d5e5ff" : "transparent",
+    ":hover": {
+      backgroundColor: "lightgray",
+      color: "black",
+    },
+    height: "10px",
+    padding: 10,
+  }),
+  valueContainer: (provided, state) => ({
+    ...provided,
+    width: 300,
+    minheight: 5,
+    border: 0,
+    // marginLeft: "-10px",
+    // marginBottom: "-20px",
+    // marginTop: "10px",
+  }),
+  input: () => ({
+    width: 300,
+    minheight: 40,
+    border: 0,
+  }),
+  multiValue: (provided) => ({
+    ...provided,
+    minwidth: 70,
+  }),
+  control: (provided, state) => ({
+    ...provided,
+    border: state.isSelected ? "none" : "none",
+    borderRadius: 0,
+    width: "490px",
+    ":hover": {
+      borderBottom: "solid 2px black",
+    },
+    borderBottom: state.isSelected ? "solid 3px lightblue" : "solid 1px gray",
+  }),
+};
 const checkEmail = (e) => {
   return (
     e === "" ||
@@ -42,12 +85,18 @@ const Settings = (props) => {
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordRepeat, setNewPasswordRepeat] = useState("");
   const [file, setFile] = useState();
+  const [value, setValue] = useState([]);
+  const [group, setGroup] = useState([]);
   const role = sessionStorage.getItem("roleUser");
   let isNameChanged = false;
   const checkRepeatPassword = (e) => {
     return e === "" || newPasswordRepeat === "" || e === newPassword;
   };
-  const saveChange = () => {};
+  const handleGroup = (childData) => {
+    setGroup(group.concat(childData.label));
+    console.log(childData);
+    setValue(childData);
+  };
   const handleCallbackFullname = (childData) => {
     setFullname(childData);
     isNameChanged = true;
@@ -80,7 +129,47 @@ const Settings = (props) => {
     // }
     // setIsLoadingFile(false);
   };
+  async function loadOptions(search, loadedOptions) {
+    let token = sessionStorage.getItem("token");
 
+    const api = "https://api.ezmeets.live/v1/Users/GetGroups";
+    let options = [];
+
+    let a = await axios
+      .get(api, { headers: { Authorization: `Bearer ${token}` } })
+      .catch(function (error) {
+        Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
+      });
+
+    let res = await a.data;
+
+    let help = res.filter((n) => n);
+
+    for (let i = 0; i < help.length; i++) {
+      options.push({
+        value: help[i],
+        label: help[i],
+      });
+    }
+    let filteredOptions;
+
+    if (!search) {
+      filteredOptions = options;
+    } else {
+      const searchLower = search.toLowerCase();
+
+      filteredOptions = options.filter(({ label }) =>
+        label.toLowerCase().includes(searchLower)
+      );
+    }
+    const hasMore = false;
+    const slicedOptions = filteredOptions;
+
+    return {
+      options: slicedOptions,
+      hasMore,
+    };
+  }
   const checkRole = (role) => {
     if (role !== "SuperAdmin") {
       return (
@@ -88,7 +177,7 @@ const Settings = (props) => {
           <FormControl
             sx={{
               height: 180,
-              marginLeft: "30px",
+              marginLeft: "130px",
             }}
             variant="standard"
           >
@@ -110,16 +199,38 @@ const Settings = (props) => {
               ></div>
             </div>
           </FormControl>
+
+          <FormControl
+            sx={{
+              height: 90,
+            }}
+            variant="standard"
+          >
+            <p style={{ marginLeft: "-20px" }} id="labelParticipant">
+              Группа
+            </p>
+            <CreatableAsyncPaginate
+              value={value}
+              styles={customStyles}
+              loadOptions={loadOptions}
+              onChange={handleGroup}
+              isSearchable={true}
+              placeholder=""
+            />
+          </FormControl>
         </Box>
       );
     }
   };
   const handleUpdate = () => {
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
+
     const api_fullName =
       "https://api.ezmeets.live/v1/Users/ChangeFullName?newFullName=";
     const api_Password = "https://api.ezmeets.live/v1/Users/ChangePassword?";
     const api_Avatar = "https://api.ezmeets.live/v1/Users/ChangeAvatar";
+    const api_Group = "https://api.ezmeets.live/v1/Users/ChangeGroup?newGroup=";
+
     if (isNameChanged) {
       axios
         .post(api_fullName + fullname, null, {
@@ -161,7 +272,7 @@ const Settings = (props) => {
         });
     }
     // console.log(file);
-    if (file !== null || file !== undefined || file !== "") {
+    if (file !== null && file !== undefined && file !== "") {
       console.log(file);
       try {
         fetch(api_Avatar, {
@@ -193,11 +304,24 @@ const Settings = (props) => {
         console.log(e);
       }
     }
+    console.log(value);
+    if (value != null && value !== undefined && value !== "") {
+      axios
+        .post(api_Group + value.label, null, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          Popup.alert("Данные изменены");
+          props.parentCallback("yes");
+        });
+    }
   };
+  const CreatableAsyncPaginate = withAsyncPaginate(Creatable);
+
   const navigate = useNavigate();
   useEffect(() => {
     const api = "https://api.ezmeets.live/v1/Users/CurrentUser";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     try {
       axios
         .get(api, { headers: { Authorization: `Bearer ${token}` } })
@@ -208,7 +332,7 @@ const Settings = (props) => {
         })
         .catch(function (error) {
           if (error.response.status === 401) {
-            localStorage.setItem("token", "");
+            sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
             navigate("/login");
           } else {

@@ -77,7 +77,7 @@ const NewConference = (props) => {
   const [result, setResult] = React.useState([]);
   const videoUrls = async (val) => {
     const api = "https://api.ezmeets.live/v1/Users/GetUsersByGroup";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     let i = 0;
     let urllist = [];
     for (i; i < val.length; i++) {
@@ -96,7 +96,7 @@ const NewConference = (props) => {
   };
   // const videoUrls = (val) => {
   //   const api = "https://api.ezmeets.live/v1/Users/GetUsersByGroup";
-  //   let token = localStorage.getItem("token");
+  //   let token = sessionStorage.getItem("token");
   //   const promises = val.map((item) => {
   //     return fetch(api + "?Group=" + val.label, {
   //       method: "get",
@@ -118,7 +118,7 @@ const NewConference = (props) => {
   function abc(arr) {
     const api = "https://api.ezmeets.live/v1/Users/GetUsersByGroup";
     let d = [];
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     try {
       for (let i = 0; i < arr.length; i++) {
         axios
@@ -154,7 +154,7 @@ const NewConference = (props) => {
   const [usersAll, setUserAll] = useState([]);
   async function fetchData() {
     const api1 = "https://api.ezmeets.live/v1/Meetings/Get";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     let response = await axios
       .get(api1, {
         params: {
@@ -167,7 +167,7 @@ const NewConference = (props) => {
       })
       .catch(function (error) {
         if (error.response.status == 403 || error.response.status == 401) {
-          localStorage.setItem("token", "");
+          sessionStorage.setItem("token", "");
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
@@ -256,7 +256,7 @@ const NewConference = (props) => {
     }
 
     const api = "https://api.ezmeets.live/v1/Meetings/ScheduleMeeting";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     let users = creatUser(resNew);
     let res = await fetch(api, {
       method: "post",
@@ -316,7 +316,7 @@ const NewConference = (props) => {
     console.log(resNew);
     console.log(nameConference);
     const api = "https://api.ezmeets.live/v1/Meetings/UpdateScheduledMeeting";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     let users = creatUser(resNew);
 
     let res = await fetch(api, {
@@ -398,7 +398,7 @@ const NewConference = (props) => {
     return !e.includes(" ") || e === "";
   };
   async function loadOptions(search, loadedOptions) {
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
 
     const api = "https://api.ezmeets.live/v1/Users/GetGroups";
     let options = [];
@@ -512,7 +512,9 @@ const NewConference = (props) => {
                   ampm={false}
                   ampmInClock={false}
                   onChange={(newValue) => {
-                    setDate(newValue);
+                    if (newValue >= new Date()) {
+                      setDate(newValue);
+                    }
                   }}
                   renderInput={(params) => (
                     <TextField {...params} variant="standard" />

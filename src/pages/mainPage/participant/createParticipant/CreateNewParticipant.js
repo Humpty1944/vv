@@ -48,8 +48,8 @@ const customStyles = {
     width: 300,
     minheight: 5,
     border: 0,
-    marginLeft: "-420px",
-    marginBottom: "-20px",
+    // marginLeft: "-10px",
+    // marginBottom: "-20px",
     // marginTop: "10px",
   }),
   input: () => ({
@@ -142,7 +142,7 @@ const CreateNewParticipant = (props) => {
   async function fetchData() {
     const api1 = "https://api.ezmeets.live/v1/Users/Get";
     const apiRole = "https://api.ezmeets.live/v1/Users/GetUserRole";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     let response = await axios
       .get(api1, {
         params: {
@@ -155,7 +155,7 @@ const CreateNewParticipant = (props) => {
       })
       .catch(function (error) {
         if (error.response.status == 403 || error.response.status == 401) {
-          localStorage.setItem("token", "");
+          sessionStorage.setItem("token", "");
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
@@ -176,7 +176,7 @@ const CreateNewParticipant = (props) => {
       })
       .catch(function (error) {
         if (error.response.status == 403 || error.response.status == 401) {
-          localStorage.setItem("token", "");
+          sessionStorage.setItem("token", "");
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
@@ -264,7 +264,7 @@ const CreateNewParticipant = (props) => {
     setValue(childData);
   };
   const addNewPhoto = () => {
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     try {
       fetch("https://api.ezmeets.live/v1/Users/UpdateAvatar?userID=" + id, {
         method: "put",
@@ -321,7 +321,7 @@ const CreateNewParticipant = (props) => {
         .catch(function (error) {
           console.log(error);
           if (error.response.status == 401) {
-            localStorage.setItem("token", "");
+            sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
             navigate("/login");
           } else {
@@ -339,7 +339,7 @@ const CreateNewParticipant = (props) => {
       roleUser !== "" &&
       roleUser !== undefined
     ) {
-      let token = localStorage.getItem("token");
+      let token = sessionStorage.getItem("token");
       const api = "https://api.ezmeets.live/v1/Users/Update";
       let data = {
         id: id,
@@ -357,7 +357,7 @@ const CreateNewParticipant = (props) => {
         })
         .catch(function (error) {
           if (error.response.status === 401) {
-            localStorage.setItem("token", "");
+            sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
             //navigate("/login");
           }
@@ -397,7 +397,7 @@ const CreateNewParticipant = (props) => {
   const getPromotion = () => {
     const apiAdmin = "https://api.ezmeets.live/v1/Users/MakeAdmin?userID=" + id;
     const apiSuperAdmin = "https://api.ezmeets.live/v1/Users/MakeSuperAdmin";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     const secret = "(Swk9kWq7;/3(*d-_<7uXscp9u%tjWmn9u%tjWmn";
 
     if (roleUser === "Модератор") {
@@ -408,7 +408,7 @@ const CreateNewParticipant = (props) => {
         })
         .catch(function (error) {
           if (error.response.status === 401) {
-            localStorage.setItem("token", "");
+            sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
             //navigate("/login");
           }
@@ -433,7 +433,13 @@ const CreateNewParticipant = (props) => {
   const showImage = (img) => {
     if (props.pageName === "Update" && (img !== null || img != undefined)) {
       return (
-        <div style={{}}>
+        <div
+          style={
+            {
+              /*paddingRight: "200px" */
+            }
+          }
+        >
           <a href={img} target="_blank">
             Предыдущая фотография
           </a>
@@ -452,10 +458,11 @@ const CreateNewParticipant = (props) => {
           <FormControl
             sx={{
               height: 80,
+              // marginLeft: "130px",
             }}
             variant="standard"
           >
-            <div className="imageUpload">
+            <div className="imageUpload" style={{ marginLeft: "220px" }}>
               <ImageUploader
                 withPreview={true}
                 label={""}
@@ -466,14 +473,25 @@ const CreateNewParticipant = (props) => {
                 singleImage={true}
                 className="fileContainer"
               />
-              <div
+              {/* <div
                 style={{
-                  height: "20px",
+                  height: "120px",
                 }}
-              ></div>
-              {showImage(imgURL)}
+              ></div> */}
             </div>
           </FormControl>
+          <Box sx={{ display: "flex", flexWrap: "wrap", height: "10px" }}>
+            <FormControl
+              sx={{
+                height: 120,
+                // marginLeft: "130px",
+              }}
+              variant="standard"
+            >
+              <div style={{ height: "370px" }}></div>
+              {showImage(imgURL)}
+            </FormControl>
+          </Box>
           <div style={{ height: "170px" }}></div>
           <Box sx={{ display: "flex", flexWrap: "wrap" }}>
             <FormControl

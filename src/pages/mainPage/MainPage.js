@@ -54,7 +54,7 @@ const MainPage = () => {
   };
   useEffect(() => {
     const api = "https://api.ezmeets.live/v1/Users/CurrentUser";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
 
     axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
@@ -78,7 +78,7 @@ const MainPage = () => {
   }, [url]);
   useEffect(() => {
     const api = "https://api.ezmeets.live/v1/Users/CurrentUser";
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
 
     axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
@@ -98,7 +98,7 @@ const MainPage = () => {
       })
       .catch(function (error) {
         if (error.response.status === 401) {
-          localStorage.setItem("token", "");
+          sessionStorage.setItem("token", "");
           localStorage.setItem("date", "");
           navigate("/login");
           return;

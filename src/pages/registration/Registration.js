@@ -151,7 +151,7 @@ const Registration = () => {
             text="Пароль"
             parentCallback={handleCallbackPassword}
             check={checkPassword}
-            warning="В пароле должно быть от 6 до 12 символов и хотя бы одна цифра, заглавная и строчная буквы"
+            warning="В пароле должно быть от 6 до 12 символов и хотя бы одна цифра, заглавная, строчная буквы, специальный символ"
           />
           <div style={{ height: "20px" }}></div>
           <OneLine

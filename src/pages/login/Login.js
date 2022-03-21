@@ -34,7 +34,7 @@ const Login = () => {
             Popup.alert("Проверьте правльность введенных данных");
             return;
           } else {
-            localStorage.setItem("token", responseJson.token);
+            sessionStorage.setItem("token", responseJson.token);
             localStorage.setItem("date", new Date(responseJson.expiration));
             navigate("/");
           }

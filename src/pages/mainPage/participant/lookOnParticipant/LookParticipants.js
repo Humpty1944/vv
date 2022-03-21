@@ -109,7 +109,7 @@ const LookParticipants = (props) => {
     return res;
   }
   async function deleteRequest(rowsDeleted) {
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
 
     for (let i = 0; i < rowsDeleted.data.length; i++) {
       let idUsr = data_index[rowsDeleted.data[i].index];
@@ -128,12 +128,12 @@ const LookParticipants = (props) => {
   async function fetchDataAll() {
     const api = "https://api.ezmeets.live/v1/Users/GetAll";
     //setData();
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     let work = await axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
       .catch(function (error) {
         if (error.response.status == 403 || error.response.status == 401) {
-          localStorage.setItem("token", "");
+          sessionStorage.setItem("token", "");
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
@@ -168,7 +168,7 @@ const LookParticipants = (props) => {
     window.addEventListener("resize", handleResize);
   }, []);
   useEffect(() => {
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     fetchDataAll();
   }, []);
   return isLoading ? (

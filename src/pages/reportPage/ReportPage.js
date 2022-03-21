@@ -85,25 +85,6 @@ const ReportPage = (props) => {
         sort: false,
       },
     },
-    {
-      name: "timePercent",
-      label: "Доля проведенного времени",
-      options: {
-        filter: false,
-        sort: false,
-        customBodyRender: (data, type, row) => {
-          return (
-            <p
-              style={{
-                color: data < 33 ? "red" : data < 66 ? "yellow" : "green",
-              }}
-            >
-              {data}
-            </p>
-          );
-        },
-      },
-    },
   ];
   const [data, setData] = useState([]);
 
@@ -149,7 +130,7 @@ const ReportPage = (props) => {
   async function fetchData() {
     let id = sessionStorage.getItem("infoID");
     const api1 = "https://api.ezmeets.live/v1/Meetings/Get?id=" + id;
-    let token = localStorage.getItem("token");
+    let token = sessionStorage.getItem("token");
     let response = await axios
       .get(api1, {
         headers: { Authorization: `Bearer ${token}` },
@@ -167,39 +148,51 @@ const ReportPage = (props) => {
 
     for (let i = 0; i < result.usersAtMeeting.length; i++) {
       let currTime = workWithLog(result.usersAtMeeting[i].connectionLogs);
-      let endTiem = new Date(result.endingTime);
+      //let endTiem = new Date(result.endingTime);
+      console.log(currTime);
       dd.push({
         fullName: result.usersAtMeeting[i].user.fullName,
         email: result.usersAtMeeting[i].user.email,
         group: result.usersAtMeeting[i].user.group,
         status: currTime[0],
         allTime: Number(currTime[1].toFixed(1)) + " мин",
-        timePercent: Number(
-          (
-            currTime[1] /
-            (new Date(result.endingTime) - new Date(result.startTime)) /
-            60000
-          ).toFixed(1)
-        ),
       });
     }
     setData(dd);
     setIsLoading(false);
   }
-  const workWithLog = (camStatuses) => {
+  const workWithLog = (connectionLogs) => {
     let res = "";
     let sumTime = 0;
-    for (let i = 0; i < camStatuses.length; i++) {
-      let dateStatus = new Date(camStatuses[i].dateTime);
-      res += "\n" + camStatuses[i].action + ": " + dateStatus.toLocaleString();
-      if (i + 1 < camStatuses.length) {
-        if (camStatuses[i].action !== camStatuses[i + 1].action) {
-          let dateEnd = new Date(camStatuses[i + 1].dateTime);
-          sumTime += dateEnd -= dateStatus;
-        }
+    let resArray = [];
+    let enter = 0;
+    let leave = 0;
+    console.log(connectionLogs.length);
+    for (let i = 0; i < connectionLogs.length; i++) {
+      if (connectionLogs[i].action === "enter") {
+        enter = new Date(connectionLogs[i].dateTime);
+      }
+      if (connectionLogs[i].action === "leave") {
+        leave = new Date(connectionLogs[i].dateTime);
+        sumTime += leave - enter;
+      }
+
+      if (resArray[connectionLogs[i].action] === undefined) {
+        resArray[connectionLogs[i].action] = 1;
+      } else {
+        resArray[connectionLogs[i].action] += 1;
       }
     }
-    return [res, sumTime / 60000];
+
+    const sumValues = (resArray) =>
+      Object.values(resArray).reduce((a, b) => a + b);
+    const sumCount = sumValues(resArray);
+    console.log(sumCount);
+    for (const [key, value] of Object.entries(resArray)) {
+      console.log(key, value);
+      res += "\n" + key + ": " + Number((value / sumCount).toFixed(3));
+    }
+    return [res, sumTime / 6000];
   };
   useEffect(() => {
     fetchData();
