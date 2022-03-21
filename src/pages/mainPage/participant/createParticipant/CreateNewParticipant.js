@@ -12,6 +12,8 @@ import { InputLabel, MenuItem, OutlinedInput, Select } from "@material-ui/core";
 import axios from "axios";
 import loadOptions from "./loadOptions";
 import { useNavigate } from "react-router-dom";
+
+import Popup from "react-popup";
 import ReactLoading from "react-loading";
 const headerLabel = (pageName) => {
   if (pageName === "Create") {
@@ -44,8 +46,11 @@ const customStyles = {
   valueContainer: (provided, state) => ({
     ...provided,
     width: 300,
-    minheight: 40,
+    minheight: 5,
     border: 0,
+    marginLeft: "-420px",
+    marginBottom: "-20px",
+    // marginTop: "10px",
   }),
   input: () => ({
     width: 300,
@@ -82,7 +87,7 @@ const checkUserName = (e) => {
   return !e.includes(" ") || e === "";
 };
 const checkPassword = (e) => {
-  return e === "" || e.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/);
+  return e === "" || e.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,12}$/);
 };
 const checkEmailFinal = (e) => {
   return (
@@ -100,14 +105,15 @@ const CreateNewParticipant = (props) => {
   const [fullname, setFullname] = useState("");
   const [password, setPassword] = useState("");
   const [group, setGroup] = useState([]);
+  const [username, setUsername] = useState("");
   const [file, setFile] = useState();
   const [email, setEmail] = useState("");
   const [value, setValue] = useState([]);
   const [regionName, setregionName] = useState("The North");
-  const [opt, setOpt] = useState([]);
+  const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [roleUser, setRole] = useState("");
   const [id, setId] = useState("");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const translate = (roleName) => {
     if (roleName === "User") {
       return "Участник";
@@ -119,27 +125,19 @@ const CreateNewParticipant = (props) => {
       return "Администратор";
     }
   };
-  const formValue = (group) => {
-    return [
-      {
-        value: group,
-        label: group,
-      },
-    ];
-  };
 
   const [isLoading, setIsLoading] = useState(true);
-
+  const handleCallbackUsername = (childData) => {
+    setUsername(childData);
+  };
   const handleLoading = () => {
-    console.log(isLoading)
     setIsLoading(false);
-    }
-    
-    useEffect(()=>{
-      console.log(isLoading)
-    window.addEventListener("load",handleLoading);
-    return () => window.removeEventListener("load",handleLoading);
-    },[])
+  };
+
+  useEffect(() => {
+    window.addEventListener("load", handleLoading);
+    return () => window.removeEventListener("load", handleLoading);
+  }, []);
 
   async function fetchData() {
     const api1 = "https://api.ezmeets.live/v1/Users/Get";
@@ -153,16 +151,18 @@ const CreateNewParticipant = (props) => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        console.log(res);
         return res;
       })
       .catch(function (error) {
-        console.log(error);
-        // if (error.response.status == 401) {
-        //   localStorage.setItem("token", "");
-        //   localStorage.setItem("date", "");
-        //   // navigate("/login");
-        // }
+        if (error.response.status == 403 || error.response.status == 401) {
+          localStorage.setItem("token", "");
+          localStorage.setItem("date", "");
+          navigate("/login");
+        } else {
+          Popup.alert(
+            "Пожалуйста, подождите несколько минут и повторите запрос"
+          );
+        }
       });
     let responseRole = await axios
       .get(apiRole, {
@@ -172,61 +172,83 @@ const CreateNewParticipant = (props) => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        console.log(res);
         return res;
       })
       .catch(function (error) {
-        console.log(error);
-        // if (error.response.status == 401) {
-        //   localStorage.setItem("token", "");
-        //   localStorage.setItem("date", "");
-        //   // navigate("/login");
-        // }
+        if (error.response.status == 403 || error.response.status == 401) {
+          localStorage.setItem("token", "");
+          localStorage.setItem("date", "");
+          navigate("/login");
+        } else {
+          Popup.alert(
+            "Пожалуйста, подождите несколько минут и повторите запрос"
+          );
+        }
       });
     let user = await response.data;
     let roleaw = await responseRole.data;
-    console.log(roleaw)
+    // let blob = await fetch(user.avatarPath).then((r) => r.blob());
+
     setFullname(user.fullName);
     setEmail(user.email);
-    // setGroup(user.group);
-    // setValue(formValue(group));
+    setGroup([user.group]);
+    setImageURL(user.avatarPath);
+
+    setValue([
+      {
+        value: user.group,
+        label: user.group,
+      },
+    ]);
     setRole(translate(roleaw));
     setId(user.id);
-    setIsLoading(falseghjk)
-    console.log(roleaw);
+
+    setIsLoading(false);
   }
   useEffect(() => {
-    console.log(props.pageName);
     if (props.pageName === "Update") {
+      setIsLoadingFile(true);
       fetchData();
-     
     } else {
       setFullname("");
       setEmail("");
       setFile(null);
       setGroup([]);
       setRole("");
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }, []);
-  if (props.pageName === "Create") {
-    console.log(props.userID);
+  useEffect(() => {
+    if (props.pageName === "Update") {
+      setIsLoadingFile(true);
+      fetchData();
+    } else {
+      setFullname("");
+      setEmail("");
+      setFile(null);
+      setGroup([]);
+      setRole("");
+      setIsLoading(false);
+    }
+  }, [props.pageName]);
+  async function fileGet(url) {
+    let blob = await fetch(url).then((r) => r.blob());
+    return blob;
   }
-
   const onDrop = (pictureFiles, pictureDataURLs) => {
     let form = new FormData();
-    console.log(pictureFiles.length);
+
     if (pictureFiles.length === 1) {
       form.append("File", pictureFiles[0], pictureFiles[0].name);
-      console.log(pictureFiles[0].name);
+
       setFile(form);
     } else {
-      console.log(null);
       setFile(null);
     }
+    // }
+    // setIsLoadingFile(false);
   };
   const handleRole = (event) => {
-    console.log(event.target.value);
     setRole(event.target.value);
   };
 
@@ -236,19 +258,16 @@ const CreateNewParticipant = (props) => {
   const handleCallbackEmail = (childData) => {
     setEmail(childData);
   };
-  const handleCallback = (childData) => {
-    console.log(childData);
-  };
+  const handleCallback = (childData) => {};
   const handleGroup = (childData) => {
-    console.log(childData.label);
     setGroup(group.concat(childData.label));
     setValue(childData);
   };
   const addNewPhoto = () => {
     let token = localStorage.getItem("token");
     try {
-      fetch("https://api.ezmeets.live/v1/Users/ChangeAvatar", {
-        method: "post",
+      fetch("https://api.ezmeets.live/v1/Users/UpdateAvatar?userID=" + id, {
+        method: "put",
         headers: {
           ContentType: "multipart/form-data",
           Accept: "application/json",
@@ -259,11 +278,18 @@ const CreateNewParticipant = (props) => {
       })
         .then((response) => response.json())
         .then((responseJson) => {
-          console.log(responseJson);
+          if (
+            responseJson.status === 401 ||
+            responseJson.status === 404 ||
+            responseJson.status === 500
+          ) {
+            Popup.alert("Проверьте правльность введенных данных");
+            return;
+          } else {
+            setIsLoading(false);
+          }
         });
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   };
   const createUser = () => {
     if (
@@ -274,138 +300,251 @@ const CreateNewParticipant = (props) => {
       group.length > 0
     ) {
       const api = "https://api.ezmeets.live/v1/Users/Register";
-      
-        axios
-          .post(api, {
-            userName: email,
-            password: "123456Password@",
-            fullName: fullname,
-            email: email,
-            group: group[0],
-          })
-          .then((res) => {
-            console.log(res);
-            if (file !== null) {
-              addNewPhoto();
-            }
-            if (roleUser !== "Участник") {
-              getPromotion();
-            }
-          })
-          .catch(function (error) {
-            if (error.response.status == 401) {
-              localStorage.setItem("token", "");
-              localStorage.setItem("date", "");
-              //navigate("/login");
-            }
-          });
-          console.log('Aaaaa')
-          props.parentCallback("a");
+
+      axios
+        .post(api, {
+          userName: email,
+          password: "123456Password@",
+          fullName: fullname,
+          email: email,
+          group: group[0],
+        })
+        .then((res) => {
+          console.log(res);
+          if (file !== null) {
+            addNewPhoto();
+          }
+          if (roleUser !== "Участник") {
+            getPromotion();
+          }
+        })
+        .catch(function (error) {
+          console.log(error);
+          if (error.response.status == 401) {
+            localStorage.setItem("token", "");
+            localStorage.setItem("date", "");
+            navigate("/login");
+          } else {
+          }
+        });
+
+      props.parentCallback("a");
     }
-    
   };
 
   const updateUser = () => {
-    console.log()
     if (
       checkEmailFinal(email) &&
       checkFullnameFinal(fullname) &&
       roleUser !== "" &&
-      roleUser !== undefined 
-     
+      roleUser !== undefined
     ) {
       let token = localStorage.getItem("token");
       const api = "https://api.ezmeets.live/v1/Users/Update";
-      
-        let config = {
-          headers: { Authorization: `Bearer ${token}`, 
-        accept: 'text/plain',
-      "Content-Type":'application/json-patch+json'
-      }
-        }
-        let data = 
-          {
-            id: id,
-            userName: email,
-            fullName: fullname,
-            email: email,
-            group: group[0],
+      let data = {
+        id: id,
+        userName: email,
+        fullName: fullname,
+        email: email,
+        group: group[0],
+      };
+      axios
+        .put(api, data, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          console.log(res);
+        })
+        .catch(function (error) {
+          if (error.response.status === 401) {
+            localStorage.setItem("token", "");
+            localStorage.setItem("date", "");
+            //navigate("/login");
           }
-        
-        axios
-          .put(api, data,config)
-          .then((res) => {
-            console.log(res);
-            if (file !== null) {
-              addNewPhoto();
-            }
-            console.log(roleUser !== "Участник")
-            if (roleUser !== "Участник") {
-              console.log("aaaaaa")
-              getPromotion();
-            }
-          })
-          .catch(function (error) {
-            console.log(error)
-            if (error.response.status == 401) {
-              localStorage.setItem("token", "");
-              localStorage.setItem("date", "");
-              //navigate("/login");
-            }
-          });
-          props.parentCallback("a");
+        });
+
+      if (file !== null && file !== undefined) {
+        addNewPhoto();
+      }
+
+      if (roleUser !== "Участник") {
+        getPromotion();
+      }
+      let config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          accept: "text/plain",
+          "Content-Type": "application/json-patch+json",
+        },
+      };
+
+      props.parentCallback("a");
     }
   };
+
   const buttonCreateNewParticipant = () => {
-    console.log(props.pageName )
+    setIsLoading(true);
+
     if (props.pageName === "Create") {
-      console.log("aaa")
       createUser();
+      setIsLoading(false);
     } else {
-      console.log("bbb")
       updateUser();
     }
+    props.parentCallback("a");
+    window.location.reload(false);
   };
   const getPromotion = () => {
-    const apiAdmin = "https://api.ezmeets.live/v1/Users/MakeAdmin"
-    const apiSuperAdmin = "https://api.ezmeets.live/v1/Users/MakeSuperAdmin"
+    const apiAdmin = "https://api.ezmeets.live/v1/Users/MakeAdmin?userID=" + id;
+    const apiSuperAdmin = "https://api.ezmeets.live/v1/Users/MakeSuperAdmin";
     let token = localStorage.getItem("token");
-    console.log('getPromotion')
-    if  (roleUser === "Модератор"){
+    const secret = "(Swk9kWq7;/3(*d-_<7uXscp9u%tjWmn9u%tjWmn";
+
+    if (roleUser === "Модератор") {
       axios
-      .put(apiSuperAdmin, {
-        userID: id,
-    
-      },{ headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
-        console.log(res);
-      })
-      .catch(function (error) {
-        if (error.response.status === 401) {
-          localStorage.setItem("token", "");
-          localStorage.setItem("date", "");
-          //navigate("/login");
-        }
-      });
+        .post(apiAdmin, null)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch(function (error) {
+          if (error.response.status === 401) {
+            localStorage.setItem("token", "");
+            localStorage.setItem("date", "");
+            //navigate("/login");
+          }
+        });
     }
-     if (roleUser==="Администратор"){
+    if (roleUser === "Администратор") {
       axios
-      .put(apiAdmin, {
-        userID: id,
-    
-      },{ headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => {
-        console.log(res);
-        
-      })
-      .catch(function (error) {
-        if (error.response.status == 401) {
-          localStorage.setItem("token", "");
-          localStorage.setItem("date", "");
-          //navigate("/login");
-        }
-    })
-     }
+        .post(apiAdmin + "?userID=" + id + "&secret=" + secret, null, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {})
+        .catch(function (error) {
+          // if (error.response.status == 401) {
+          //   localStorage.setItem("token", "");
+          //   localStorage.setItem("date", "");
+          //   //navigate("/login");
+          // }
+        });
+    }
+  };
+  const [imgURL, setImageURL] = useState("");
+  const showImage = (img) => {
+    if (props.pageName === "Update" && (img !== null || img != undefined)) {
+      return (
+        <div style={{}}>
+          <a href={img} target="_blank">
+            Предыдущая фотография
+          </a>
+
+          {/* <h3>Фото</h3>
+          <img src={img} alt="new" /> */}
+        </div>
+      );
+    }
+  };
+
+  const constCreateUserFirstTime = () => {
+    if (props.pageName === "Update") {
+      return (
+        <div>
+          <FormControl
+            sx={{
+              height: 80,
+            }}
+            variant="standard"
+          >
+            <div className="imageUpload">
+              <ImageUploader
+                withPreview={true}
+                label={""}
+                withIcon={false}
+                buttonText="Загрузите фото участника"
+                onChange={onDrop} //{this.onDrop}
+                imgExtension={[".jpg", ".png", ".jpeg"]}
+                singleImage={true}
+                className="fileContainer"
+              />
+              <div
+                style={{
+                  height: "20px",
+                }}
+              ></div>
+              {showImage(imgURL)}
+            </div>
+          </FormControl>
+          <div style={{ height: "170px" }}></div>
+          <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+            <FormControl
+              sx={{
+                height: 90,
+              }}
+              variant="standard"
+            >
+              <p style={{ marginLeft: "-20px" }} id="labelParticipant">
+                Группа
+              </p>
+              <CreatableAsyncPaginate
+                value={value}
+                styles={customStyles}
+                loadOptions={loadOptions}
+                onChange={handleGroup}
+                isSearchable={true}
+                placeholder=""
+              />
+              {onRole("Администратор")}
+              <Button
+                style={{
+                  width: 150,
+                  marginLeft: "500px",
+                  marginBottom: "-80px",
+                  height: 50,
+                }}
+                variant="outlined"
+                onClick={buttonCreateNewParticipant}
+                text="sdfsddfsfdsfsd"
+              >
+                {buttonLabel(props.pageName)}
+              </Button>
+            </FormControl>
+          </Box>
+        </div>
+      );
+    } else {
+      return (
+        <FormControl
+          sx={{
+            height: 110,
+          }}
+          variant="standard"
+        >
+          <OneLine
+            disabled={true}
+            type="text"
+            text="Логин"
+            value={username}
+            parentCallback={handleCallbackUsername}
+            check={checkUserName}
+            warning="Введите корректный логин"
+          />
+          <div style={{ height: "40px" }} />
+          <Button
+            style={{
+              width: 150,
+              marginLeft: "500px",
+              marginBottom: "-50px",
+              height: 50,
+            }}
+            variant="outlined"
+            onClick={buttonCreateNewParticipant}
+            text="sdfsddfsfdsfsd"
+          >
+            {buttonLabel(props.pageName)}
+          </Button>
+        </FormControl>
+      );
+    }
   };
   const onRole = (role) => {
     if (role === "Администратор") {
@@ -448,7 +587,9 @@ const CreateNewParticipant = (props) => {
               fontSize: 14,
             }}
           >
-            <MenuItem value={"Администратор"}>Администратор</MenuItem>
+            <MenuItem disabled value={"Администратор"}>
+              Администратор
+            </MenuItem>
             <MenuItem value={"Модератор"}>Модератор</MenuItem>
             <MenuItem value={"Участник"}>Участник</MenuItem>
           </Select>
@@ -461,7 +602,9 @@ const CreateNewParticipant = (props) => {
   };
   const CreatableAsyncPaginate = withAsyncPaginate(Creatable);
 
-  return isLoading ? (<ReactLoading type={'spin'} color="#000" />): (
+  return isLoading ? (
+    <ReactLoading type={"spin"} color="#000" />
+  ) : (
     <div>
       <div id="newConference">
         <Box
@@ -526,7 +669,8 @@ const CreateNewParticipant = (props) => {
                 warning="Введите корректную почту"
               />
             </FormControl>
-            <FormControl
+            {constCreateUserFirstTime()}
+            {/* <FormControl
               sx={{
                 height: 80,
               }}
@@ -542,12 +686,16 @@ const CreateNewParticipant = (props) => {
                   imgExtension={[".jpg", ".png", ".jpeg"]}
                   singleImage={true}
                   className="fileContainer"
-                  // buttonStyles={styles.buttonCustom}
-                  // fileContainerStyle={styles.title} (pictureFiles, pictureDataURLs) => this.props.onDrop(pictureFiles, pictureDataURLs)
                 />
+                <div
+                  style={{
+                    height: "20px",
+                  }}
+                ></div>
+                {showImage(imgURL)}
               </div>
             </FormControl>
-            <div style={{ height: "100px" }}></div>
+            <div style={{ height: "170px" }}></div>
             <Box sx={{ display: "flex", flexWrap: "wrap" }}>
               <FormControl
                 sx={{
@@ -555,9 +703,11 @@ const CreateNewParticipant = (props) => {
                 }}
                 variant="standard"
               >
-                <p id="labelParticipant">Группа</p>
+                <p style={{ marginLeft: "-20px" }} id="labelParticipant">
+                  Группа
+                </p>
                 <CreatableAsyncPaginate
-                  value={value || ""}
+                  value={value}
                   styles={customStyles}
                   loadOptions={loadOptions}
                   onChange={handleGroup}
@@ -574,14 +724,12 @@ const CreateNewParticipant = (props) => {
                   }}
                   variant="outlined"
                   onClick={buttonCreateNewParticipant}
-                  text = "sdfsddfsfdsfsd"
-                >{
-                  buttonLabel(props.pageName)
-                }
-                 
+                  text="sdfsddfsfdsfsd"
+                >
+                  {buttonLabel(props.pageName)}
                 </Button>
               </FormControl>
-            </Box>
+            </Box> */}
           </FormControl>
         </Box>
       </div>

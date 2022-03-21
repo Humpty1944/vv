@@ -19,12 +19,19 @@ const SideBar = (props) => {
     e.preventDefault();
   };
   const checkOptions = () => {
-    if (props.userRole !== "User") {
+    if (props.userRole === "SuperAdmin") {
       return (
         <SubMenu title="Участники">
           <MenuItem onClick={(e) => changePage(e)}>
             Добавить нового участника
           </MenuItem>
+          <MenuItem onClick={(e) => changePage(e)}>Список участников</MenuItem>
+        </SubMenu>
+      );
+    }
+    if (props.userRole === "Admin") {
+      return (
+        <SubMenu title="Участники">
           <MenuItem onClick={(e) => changePage(e)}>Список участников</MenuItem>
         </SubMenu>
       );
@@ -54,32 +61,13 @@ const SideBar = (props) => {
       <ProSidebar>
         <Menu iconShape="square">
           <SidebarContent>
-            <UserInfo username={props.userName} />
+            <UserInfo username={props.userName} role={props.userRole} />
             <div style={{ borderBottom: "1px solid gray" }}>
               <p className="roleText">{props.userRole}</p>
             </div>
           </SidebarContent>
           {checkOptionsConference()}
-          {/* <SubMenu title="Конференции">
-            <MenuItem onClick={(e) => changePage(e)}>
-              Создать конференцию
-            </MenuItem>
-            <MenuItem onClick={(e) => changePage(e)}>
-              Предстоящие конференции
-            </MenuItem>
-            <MenuItem onClick={(e) => changePage(e)}>
-              Прошедшие конференции
-            </MenuItem>
-          </SubMenu> */}
           {checkOptions()}
-          {/* <SubMenu title="Участники">
-            <MenuItem onClick={(e) => changePage(e)}>
-              Добавить нового участника
-            </MenuItem>
-            <MenuItem onClick={(e) => changePage(e)}>
-              Список участников
-            </MenuItem>
-          </SubMenu> */}
           <MenuItem onClick={(e) => changePage(e)}>
             Настройки пользователя
           </MenuItem>

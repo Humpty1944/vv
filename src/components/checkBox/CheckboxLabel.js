@@ -7,7 +7,7 @@ export default function CheckboxLabel(props) {
   const [check, setCheck] = useState(false);
   const changeList = (e) => {
     setCheck(!check);
-    console.log(check);
+
     props.parentCallback(check);
     // e.preventDefault();
   };

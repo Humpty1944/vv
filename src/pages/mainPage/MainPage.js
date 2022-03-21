@@ -11,7 +11,8 @@ import PastConference from "./pastConference/PastConference";
 import Settings from "./settings/Settings";
 import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { CatchingPokemonSharp } from "@mui/icons-material";
+import Popup from "react-popup";
+import ReactLoading from "react-loading";
 const MainPage = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState("");
@@ -20,7 +21,7 @@ const MainPage = () => {
   const [userID, setUserID] = useState("");
   const [conferenceID, setConferenceID] = useState("");
   const [pageLook, setPageLook] = useState();
-  const [isUser, setIsUser] = useState(false);
+  const [isRender, setRender] = useState(false);
   const [isConference, setIsConference] = useState(false);
   let a = 1;
   const handleCallback = (childData) => {
@@ -41,69 +42,106 @@ const MainPage = () => {
   };
   const handleNewParticipantBack = (childData) => {
     setPage("Список участников");
-   // setConferenceID(childData);
+    // setConferenceID(childData);
   };
-  const handleCallbackNewConference = (childData) => {
+  const handleCallbackNewConference = () => {
     setPage("Предстоящие конференции");
-   // setConferenceID(childData);
+    // setConferenceID(childData);
   };
-  
+  const handleRerender = (childData) => {
+    setRender(true);
+    // setConferenceID(childData);
+  };
   useEffect(() => {
     const api = "https://api.ezmeets.live/v1/Users/CurrentUser";
     let token = localStorage.getItem("token");
-    try {
-      axios
-        .get(api, { headers: { Authorization: `Bearer ${token}` } })
-        .then((res) => {
-          
-          console.log(res.data.id);
-          setUserName(res.data.fullName);
-          localStorage.setItem("idUser", res.data.id);
-          // setUserRole("Admin");
-          let api_user = "https://api.ezmeets.live/v1/Users/CurrentUserRole";
-          axios
-            .get(api_user, { headers: { Authorization: `Bearer ${token}` } })
-            .then((res) => {
-              console.log(res.data.id);
-              
-              setUserRole(res.data);
-              //setUserRole(res.data);
-            });
-        })
-        .catch(function (error) {
-          if (error.response.status == 401) {
-            localStorage.setItem("token", "");
-            localStorage.setItem("date", "");
-            navigate("/login");
-          }
-        });
-    } catch (e) {
-      console.log("resdsdsads");
-    }
+
+    axios
+      .get(api, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        setUserName(res.data.fullName);
+        localStorage.setItem("idUser", res.data.id);
+        let api_user = "https://api.ezmeets.live/v1/Users/CurrentUserRole";
+        axios
+          .get(api_user, { headers: { Authorization: `Bearer ${token}` } })
+          .then((resNew) => {
+            setUserRole(resNew.data);
+            setIsLoading(false);
+          });
+      })
+      .catch(function (error) {});
+  }, [isRender]);
+  const [url, setURL] = useState("");
+
+  useEffect(() => {
+    sessionStorage.setItem("url", url);
+  }, [url]);
+  useEffect(() => {
+    const api = "https://api.ezmeets.live/v1/Users/CurrentUser";
+    let token = localStorage.getItem("token");
+
+    axios
+      .get(api, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        setUserName(res.data.fullName);
+        setURL(res.data.avatarPath);
+        console.log(res.data.id);
+        localStorage.setItem("idUser", res.data.id);
+        let api_user = "https://api.ezmeets.live/v1/Users/CurrentUserRole";
+        axios
+          .get(api_user, { headers: { Authorization: `Bearer ${token}` } })
+          .then((resNew) => {
+            setUserRole(resNew.data);
+            sessionStorage.setItem("roleUser", resNew.data);
+            setIsLoading(false);
+          });
+      })
+      .catch(function (error) {
+        if (error.response.status === 401) {
+          localStorage.setItem("token", "");
+          localStorage.setItem("date", "");
+          navigate("/login");
+          return;
+        } else {
+          // Popup.alert(
+          //   "Пожалуйста, подождите несколько минут и повторите запрос"
+          // );
+          // return;
+        }
+      });
   }, []);
   const choosePage = () => {
-    // if (userID !== "") {
-    //   setUserID("");
-    //   return <CreateNewParticipant userID={userID} />;
-    // }
-    console.log(page)
     if (userRole === "User" && page === "") {
-      return <Settings />;
+      return <Settings parentCallback={handleRerender} />;
+    }
+    if (userRole === "" && page === "") {
+      return <Settings parentCallback={handleRerender} />;
     }
     if (page === "UserData") {
-      return <CreateNewParticipant userID={userID} pageName={"Update"} />;
+      return (
+        <CreateNewParticipant
+          userID={userID}
+          pageName={"Update"}
+          parentCallback={handleNewParticipantBack}
+        />
+      );
     }
     if (page === "FutureReport") {
       return (
         <NewConference
           conferenceID={conferenceID}
           pageName={"Update"}
+          parentCallback={handleCallbackNewConference}
         ></NewConference>
       );
     }
     if (page === "Создать конференцию") {
       return (
-        <NewConference conferenceID={0} pageName={"Create"} parentCallback={handleCallbackNewConference}></NewConference>
+        <NewConference
+          conferenceID={0}
+          pageName={"Create"}
+          parentCallback={handleCallbackNewConference}
+        ></NewConference>
       );
     }
     if (page === "Предстоящие конференции" || page === "") {
@@ -115,13 +153,19 @@ const MainPage = () => {
       return <PastConference />;
     }
     if (page === "Добавить нового участника") {
-      return <CreateNewParticipant userID={0} pageName={"Create"} parentCallback={handleNewParticipantBack}/>;
+      return (
+        <CreateNewParticipant
+          userID={0}
+          pageName={"Create"}
+          parentCallback={handleNewParticipantBack}
+        />
+      );
     }
     if (page === "Список участников") {
       return <LookParticipants parentCallback={handleCallbackUserData} />;
     }
     if (page === "Настройки пользователя") {
-      return <Settings />;
+      return <Settings parentCallback={handleRerender} />;
     }
     if (page === "Выйти из аккаунта") {
       logOut();
@@ -133,18 +177,28 @@ const MainPage = () => {
     setPageLook(choosePage());
     return pageLook;
   };
-  return (
+  const [isLoading, setIsLoading] = useState(true);
+  return isLoading ? (
+    <div style={{ position: "relative", height: "100%" }}>
+      <div
+        style={{
+          position: "absolute",
+          bottom: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
+      >
+        <ReactLoading type={"spin"} color="#000" />
+      </div>
+    </div>
+  ) : (
     <div className="mainPage">
       <SideBar
-        // className="sideBarMainPage"
         parentCallback={handleCallback}
         userName={userName}
         userRole={userRole}
       ></SideBar>
-      <div id="pageWork">
-        {/* <NewConference></NewConference> */}
-        {choosePage()}
-      </div>
+      <div id="pageWork">{choosePage()}</div>
     </div>
   );
 };

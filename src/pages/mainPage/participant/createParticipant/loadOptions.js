@@ -1,5 +1,7 @@
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
+import Popup from "react-popup";
 let token = localStorage.getItem("token");
 
 const api = "https://api.ezmeets.live/v1/Users/GetGroups";
@@ -10,7 +12,6 @@ axios
   .get(api, { headers: { Authorization: `Bearer ${token}` } })
   .then((res) => {
     let help = res.data.filter((n) => n);
-
     for (let i = 0; i < help.length; i++) {
       options.push({
         value: help[i],
@@ -19,8 +20,7 @@ axios
     }
   })
   .catch(function (error) {
-    if (error.response.status == 401) {
-    }
+    Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
   });
 const sleep = (ms) =>
   new Promise((resolve) => {

@@ -13,11 +13,14 @@ import FormControl from "@mui/material/FormControl";
 import CheckboxLabel from "../../../components/checkBox/CheckboxLabel";
 import { Button } from "@mui/material";
 import Box from "@mui/material/Box";
-import loadOptions from "./loadOptions";
+//import loadOptions from "./loadOptions.js";
 import axios from "axios";
 import ReactLoading from "react-loading";
-registerLocale("ru", ru);
+import { NavLink, useNavigate } from "react-router-dom";
+import Popup from "react-popup";
+import { SelectAllOutlined } from "@material-ui/icons";
 
+registerLocale("ru", ru);
 
 const buttonLabel = (pageName) => {
   if (pageName === "Create") {
@@ -66,51 +69,89 @@ const customStyles = {
     borderBottom: state.isSelected ? "solid 3px lightblue" : "solid 1px gray",
   }),
 };
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
 
 const NewConference = (props) => {
   const [nameConference, setNameConference] = useState("");
   const [date, setDate] = useState(new Date());
-  const [personName, setPersonName] = React.useState([]);
-  const [isGroup, setIsGroup] = useState(false);
   const [value, setValue] = React.useState([]);
-  const [onlyGroup, setOnlyGroup] = useState(false);
-  const [regionName, setregionName] = useState("The North");
-  const handleChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setPersonName(
-      // On autofill we get a stringified value.
-      typeof value === "string" ? value.split(",") : value
-    );
-  };
-  const handleCallback = (childData) => {
-    console.log(childData);
-    setIsGroup(childData);
-  };
-  const [result, setResult] = useState([]);
-  const getUserByGroup = () => {
+  const [result, setResult] = React.useState([]);
+  const videoUrls = async (val) => {
     const api = "https://api.ezmeets.live/v1/Users/GetUsersByGroup";
     let token = localStorage.getItem("token");
-    let r = [];
-    if (value.length > 0) {
-      try {
-        let res = fetch(api + "?Group=" + value[0].label, {
-          method: "get",
-          headers: {
-           
-            Authorization: `Bearer ${token}`,
-          },
-        }).then((response) => console.log(response));
-      } catch (e) {
-        console.log(e);
-      }
+    let i = 0;
+    let urllist = [];
+    for (i; i < val.length; i++) {
+      const response = await fetch(api + "?Group=" + val[i].label, {
+        method: "get",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const json = await response.json();
+      urllist.push(json);
+      console.log({ urllist });
     }
-    setResult(r);
-    console.log(result);
+    let a = await urllist;
+    return a;
   };
+  // const videoUrls = (val) => {
+  //   const api = "https://api.ezmeets.live/v1/Users/GetUsersByGroup";
+  //   let token = localStorage.getItem("token");
+  //   const promises = val.map((item) => {
+  //     return fetch(api + "?Group=" + val.label, {
+  //       method: "get",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     }).then((response) => {
+  //       return response.json();
+  //     });
+  //   });
+
+  //   Promise.all(promises).then((results) => {
+  //     const videos = results;
+  //     console.log(videos);
+  //     setResult({ videos });
+  //   });
+  // };
+  // const [result, setResult] = useState([]);
+  function abc(arr) {
+    const api = "https://api.ezmeets.live/v1/Users/GetUsersByGroup";
+    let d = [];
+    let token = localStorage.getItem("token");
+    try {
+      for (let i = 0; i < arr.length; i++) {
+        axios
+          .get(api + "?Group=" + arr[i].label, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .then((res) => {
+            let idd = [];
+
+            for (let i = 0; i < res.data.length; i++) {
+              d.push(res.data[i].id);
+
+              // idd.push(r[i].meetingID);
+            }
+            console.log(d);
+            // setData(d);
+            // setIndexes(idd);
+            // setIsLoading(false);
+            // setFullname(res.data.fullName);
+            // setEmail(res.data.email);
+            // setUsername(res.data.userName);
+          })
+          .catch(function (error) {});
+      }
+    } catch (e) {}
+    console.log(d);
+    setResult(d);
+    console.log(result);
+    return result;
+  }
+
+  const navigate = useNavigate();
+  const [usersAll, setUserAll] = useState([]);
   async function fetchData() {
     const api1 = "https://api.ezmeets.live/v1/Meetings/Get";
     let token = localStorage.getItem("token");
@@ -122,76 +163,102 @@ const NewConference = (props) => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        console.log(res);
         return res;
       })
       .catch(function (error) {
-        console.log(error);
-        // if (error.response.status == 401) {
-        //   localStorage.setItem("token", "");
-        //   localStorage.setItem("date", "");
-        //   // navigate("/login");
-        // }
+        if (error.response.status == 403 || error.response.status == 401) {
+          localStorage.setItem("token", "");
+          localStorage.setItem("date", "");
+          navigate("/login");
+        } else {
+          Popup.alert(
+            "Пожалуйста, подождите несколько минут и повторите запрос"
+          );
+        }
       });
 
     let user = await response.data;
-    setDate(new Date(user.startTime));
-   
-    // setFullname(user.fullName);
-    // setEmail(user.email);
-    // setGroup(user.group);
-    // setValue(formValue(group));
-    // setRole(roleaw);
-    // setId(user.id);
-  }
+    console.log(user);
+    let allowed = await response.data.allowedUsers;
+    let date = new Date(user.startTime);
+    date.setHours(date.getHours() + 3);
+    setNameConference(user.name);
+    setUserAll(allowed);
 
+    setDate(date);
+  }
 
   const [isLoading, setIsLoading] = useState(true);
 
   const handleLoading = () => {
-    console.log(isLoading)
     setIsLoading(false);
-    }
-    
-    useEffect(()=>{
-      console.log(isLoading)
-    window.addEventListener("load",handleLoading);
-    return () => window.removeEventListener("load",handleLoading);
-    },[])
+  };
+
+  useEffect(() => {
+    window.addEventListener("load", handleLoading);
+    return () => window.removeEventListener("load", handleLoading);
+  }, []);
   useEffect(() => {
     if (props.pageName === "Update") {
       let rowData = sessionStorage.getItem("fut_conf").split(",");
 
       setNameConference(rowData[0]);
       fetchData();
-      setIsLoading(false)
-    } else {
+      setIsLoading(false);
+    } else if (props.pageName === "Update") {
+      setIsLoading(true);
       setNameConference("");
       setDate(new Date());
-      setIsLoading(false)
+      setIsLoading(false);
     }
-    // setDate(sessionStorage.getItem("fut_conf_date"));
-    // console.log(new Date(sessionStorage.getItem("fut_conf_date")));
   }, []);
-  const creatUser = () => {
-    let ret = [];
-    console.log(result);
-    for (let i = 0; i < result.length; i++) {
-      ret.push({ userID: result[i] });
+  useEffect(() => {
+    if (props.pageName === "Update") {
+    } else {
+      setIsLoading(true);
+      setNameConference("");
+      setDate(new Date());
+      setIsLoading(false);
     }
-    let idUser = localStorage.getItem('idUser')
-    console.log(idUser)
-    ret.push({ userID: idUser});
+  }, [props.pageName]);
+  const creatUser = (a) => {
+    let ret = [];
+    let idUser = localStorage.getItem("idUser");
+    console.log(idUser);
+    let findCopy = usersAll.find((r) => r.userID === idUser);
+    console.log(findCopy);
+    if (findCopy === undefined || findCopy === null || findCopy === "") {
+      ret.push({ userID: idUser });
+    }
+    console.log(a);
+    for (let i = 0; i < a.length; i++) {
+      let findCopy = usersAll.find((r) => r.userID === a[i]);
+
+      if (findCopy === undefined || findCopy === null) {
+        ret.push({ userID: a[i] });
+      }
+    }
+
+    console.log(ret);
     return ret;
   };
-  const createNewConference = () => {
-    getUserByGroup();
+  const sleep = (milliseconds) => {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
+  };
+  async function createNewConference() {
+    //let a = getGroupsUsers();
+    let a = await videoUrls(value);
+    let resNew = [];
+    for (let i = 0; i < a.length; i++) {
+      for (let j = 0; j < a[i].length; j++) {
+        resNew.push(a[i][j].id);
+      }
+    }
+
     const api = "https://api.ezmeets.live/v1/Meetings/ScheduleMeeting";
     let token = localStorage.getItem("token");
-    let users = creatUser();
-    console.log("aaaaaaaa");
-    console.log(users.length);
-    let res = fetch(api, {
+    let users = creatUser(resNew);
+    let res = await fetch(api, {
       method: "post",
       headers: {
         accept: "application/json",
@@ -207,22 +274,52 @@ const NewConference = (props) => {
       .then((response) => response.json())
       .then((responseJson) => {
         if (responseJson.status === "Error") {
-          alert(responseJson.title);
+          Popup.alert(
+            "Пожалуйста, подождите несколько минут и повторите запрос"
+          );
         } else {
-          console.log(responseJson);
-          console.log('Aaaaa')
-      props.parentCallback("a");
+          props.parentCallback("a");
         }
       });
-      
+    await sleep(1000);
+    props.parentCallback("a");
+  }
+  const postReq = async () => {
+    if (this.state.theUrl.length > 0) {
+      /* await for the request to be finished */
+      await axios
+        .post("http://localhost:5000/check", {
+          url: this.state.theUrl,
+        })
+        .then(function (response) {
+          console.log("Success");
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    } else {
+      return 1;
+    }
+    return "Finished";
   };
-  const updateConference = () => {
-    getUserByGroup();
+  async function updateConference() {
+    //  setIsLoading(true);
+    console.log("update");
+    let a = await videoUrls(value);
+    let resNew = [];
+    for (let i = 0; i < a.length; i++) {
+      for (let j = 0; j < a[i].length; j++) {
+        resNew.push(a[i][j].id);
+      }
+    }
+    console.log(a);
+    console.log(resNew);
+    console.log(nameConference);
     const api = "https://api.ezmeets.live/v1/Meetings/UpdateScheduledMeeting";
     let token = localStorage.getItem("token");
-    let users = creatUser();
-    console.log(users);
-    let res = fetch(api, {
+    let users = creatUser(resNew);
+
+    let res = await fetch(api, {
       method: "put",
       headers: {
         accept: "application/json",
@@ -238,52 +335,113 @@ const NewConference = (props) => {
     })
       .then((response) => response.json())
       .then((responseJson) => {
-        if (responseJson.status === "Error") {
-          alert(responseJson.title);
-        } else {
-          console.log(responseJson);
-          console.log('Aaaaa')
-      props.parentCallback("a");
-        }
+        console.log(responseJson);
+        // if (responseJson.status === "Error") {
+        //   Popup.alert(
+        //     "Пожалуйста, подождите несколько минут и повторите запрос"
+        //   );
+        // } else {
+        //   setIsLoading(false);
+        // }
       });
-      
+    let f = await res;
+    console.log(f);
+    // await sleep(1000);
+    props.parentCallback("a");
+  }
+  function chooseAction() {
+    if (!nameConference.includes(" ") && nameConference === "") {
+      if (props.pageName === "Create") {
+        console.log(props.pageName === "Create");
+        console.log("wtf");
+        createNewConference();
+        //createNewConference();
+      } else {
+        console.log(props.pageName === "Create");
+        updateConference();
+      }
+    }
+  }
+  const handleCallbackNameConference = (childData) => {
+    console.log(childData);
+    setNameConference(childData);
+    // setUsername(childData);
   };
   const buttonCreateNewConference = () => {
-    if (props.pageName == "Create") {
-      createNewConference();
-    } else {
-      updateConference();
+    console.log(nameConference);
+    console.log(nameConference === "");
+    if (!nameConference.includes(" ") && nameConference !== "") {
+      if (props.pageName === "Create") {
+        console.log(props.pageName === "Create");
+        console.log("wtf");
+        createNewConference();
+        //createNewConference();
+      } else {
+        console.log(props.pageName === "Create");
+        updateConference();
+      }
     }
-    // axios
-    //   .post(
-    //     api,
-    //     { headers: { Authorization: `Bearer ${token}` } },
-    //     {
-    //       name: nameConference,
-    //       startTime: date.toISOString(),
-    //       allowedUsers: creatUser(),
-    //     }
-    //   )
-    //   .then((res) => {
-    //     console.log(res);
-    //   })
-    //   .catch(function (error) {
-    //     if (error.response.status == 401) {
-    //       localStorage.setItem("token", "");
-    //       localStorage.setItem("date", "");
-    //       //navigate("/login");
-    //     }
-    //   });
-    // } catch (e) {
-    //   console.log(e);
+    //chooseAction();
+    // if (props.pageName == "Create") {
+    //   createNewConference();
+    //   //createNewConference();
+    // } else {
+    //   updateConference();
     // }
+    props.parentCallback("a");
+    //window.location.reload(false);
   };
-  const check = (e) => {
-    return true;
+  // const check = (e) => {
+  //   return true;
+  // };
+  const checkName = (e) => {
+    return !e.includes(" ") || e === "";
   };
-  const onClick = () => {};
+  async function loadOptions(search, loadedOptions) {
+    let token = localStorage.getItem("token");
 
-  return isLoading? ((<ReactLoading type={'spin'} color="#000" />)):(
+    const api = "https://api.ezmeets.live/v1/Users/GetGroups";
+    let options = [];
+
+    let a = await axios
+      .get(api, { headers: { Authorization: `Bearer ${token}` } })
+      .catch(function (error) {
+        Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
+      });
+
+    let res = await a.data;
+
+    let help = res.filter((n) => n);
+
+    for (let i = 0; i < help.length; i++) {
+      options.push({
+        value: help[i],
+        label: help[i],
+      });
+    }
+    let filteredOptions;
+
+    if (!search) {
+      filteredOptions = options;
+    } else {
+      const searchLower = search.toLowerCase();
+
+      filteredOptions = options.filter(({ label }) =>
+        label.toLowerCase().includes(searchLower)
+      );
+    }
+    const hasMore = false;
+    const slicedOptions = filteredOptions;
+
+    return {
+      options: slicedOptions,
+      hasMore,
+    };
+  }
+
+  return isLoading ? (
+    <ReactLoading type={"spin"} color="#000" />
+  ) : (
     <div>
       <div id="newConference">
         <Box
@@ -332,11 +490,11 @@ const NewConference = (props) => {
                 type="text"
                 placeholder=""
                 value={nameConference}
-                parentCallback={setNameConference}
+                parentCallback={handleCallbackNameConference}
                 className="inputField"
                 text="Наименование конференции"
-                warning="sd"
-                check={check}
+                warning="Название конференции не должно быть пробелов"
+                check={checkName}
               ></OneLine>
             </FormControl>
             <FormControl
@@ -349,7 +507,8 @@ const NewConference = (props) => {
                 <DateTimePicker
                   label="Дата и время конференции"
                   value={date}
-                  format="DD/MM/YYYY HH:mm"
+                  format="DD.MM.YYYY HH:mm"
+                  // toolbarFormat="DD.MM.YYYY HH:mm"
                   ampm={false}
                   ampmInClock={false}
                   onChange={(newValue) => {
@@ -378,26 +537,7 @@ const NewConference = (props) => {
                   isSearchable={true}
                   placeholder=""
                 />
-                {/* <AsyncPaginate
-                  value={value || ""}
-                  isMulti
-                  styles={customStyles}
-                  loadOptions={loadOptions}
-                  getOptionValue={(option) => option.name}
-                  getOptionLabel={(option) => option.name}
-                  onChange={setValue}
-                  isSearchable={true}
-                  placeholder=""
-                  additional={{
-                    page: 1,
-                  }}
-                /> */}
-                {/* <div id="checkBox">
-                  <CheckboxLabel
-                    parentCallback={handleCallback}
-                    text="Только группы"
-                  ></CheckboxLabel>
-                </div> */}
+
                 <Button
                   style={{
                     width: 150,
@@ -408,7 +548,7 @@ const NewConference = (props) => {
                   variant="outlined"
                   onClick={buttonCreateNewConference}
                 >
-                 {buttonLabel(props.pageName)}
+                  {buttonLabel(props.pageName)}
                 </Button>
               </FormControl>
             </Box>
@@ -420,56 +560,3 @@ const NewConference = (props) => {
 };
 
 export default NewConference;
-
-{
-  /* <div className="oneLine">
-<div className="warning">
-  {/* <AsyncPaginate
-    key={JSON.stringify(opt)}
-    value={value || ""}
-    isMulti
-    styles={customStyles}
-    loadOptions={loadOptions}
-    getOptionValue={(option) => option.name}
-    getOptionLabel={(option) => option.name}
-    onChange={setValue}
-    isSearchable={false}
-    placeholder="Выберите участников"
-    additional={{
-      page: 1,
-    }}
-  /> */
-}
-//   <div>
-//     <input
-//       type="checkbox"
-//       id="topping"
-//       name="topping"
-//       value={onlyGroup}
-//       onChange={handleChange}
-//     />
-//     Только группы
-//   </div>
-// </div> */}
-{
-  /* <FormControl sx={{ m: 1, width: 300 }}>
-<InputLabel id="demo-multiple-checkbox-label">Tag</InputLabel>
-<Select
-  labelId="demo-multiple-checkbox-label"
-  id="demo-multiple-checkbox"
-  multiple
-  value={personName}
-  onChange={handleChange}
-  input={<OutlinedInput label="Tag" />}
-  renderValue={(selected) => selected.join(", ")}
-  MenuProps={MenuProps}
->
-  {names.map((name) => (
-    <MenuItem key={name} value={name}>
-      <Checkbox checked={personName.indexOf(name) > -1} />
-      <ListItemText primary={name} />
-    </MenuItem>
-  ))}
-</Select>
-</FormControl> */
-}

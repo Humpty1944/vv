@@ -2,6 +2,8 @@ import { Box, Button, FormControl } from "@material-ui/core";
 import React, { useState } from "react";
 import OneLine from "../../components/oneLine/OneLine";
 import { useNavigate } from "react-router-dom";
+
+import Popup from "react-popup";
 import "./Registration.css";
 const checkEmail = (e) => {
   return (
@@ -18,7 +20,12 @@ const checkUserName = (e) => {
   return !e.includes(" ") || e === "";
 };
 const checkPassword = (e) => {
-  return e === "" || e.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/);
+  return (
+    e === "" ||
+    e.match(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,12}$/
+    )
+  );
 };
 
 const Registration = () => {
@@ -96,8 +103,9 @@ const Registration = () => {
         })
           .then((response) => response.json())
           .then((responseJson) => {
+            console.log(responseJson);
             if (responseJson.status === "Error") {
-              alert(responseJson.title);
+              Popup.alert(responseJson.message);
             } else {
               navigate("/login");
             }
@@ -106,7 +114,7 @@ const Registration = () => {
         console.log(e);
       }
     } else {
-      alert("Данные введены не коректно");
+      Popup.alert("Данные введены не коректно");
     }
   };
   return (
@@ -119,7 +127,7 @@ const Registration = () => {
             text="ФИО"
             parentCallback={handleCallbackFullname}
             check={checkFullName}
-            warning="Необходима фамилия, имя и отчество"
+            warning="Необходима как минимум фамилия и  имя "
           />
           <div style={{ height: "20px" }}></div>
           <OneLine
@@ -143,7 +151,7 @@ const Registration = () => {
             text="Пароль"
             parentCallback={handleCallbackPassword}
             check={checkPassword}
-            warning="В пароле должно быть 6 символов и хотя бы одна цифра, заглавная и строчная буквы"
+            warning="В пароле должно быть от 6 до 12 символов и хотя бы одна цифра, заглавная и строчная буквы"
           />
           <div style={{ height: "20px" }}></div>
           <OneLine

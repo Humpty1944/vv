@@ -4,7 +4,8 @@ import OneLine from "../../components/oneLine/OneLine";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import { Password } from "@mui/icons-material";
-
+import Popup from "react-popup";
+import PopupReact from "react-popup/dist/Popup.react";
 const Login = () => {
   const navigate = useNavigate();
   const [login, setLogin] = useState("");
@@ -25,17 +26,23 @@ const Login = () => {
       })
         .then((response) => response.json())
         .then((responseJson) => {
-          if (responseJson.error === "Error") {
-            alert(responseJson.title);
+          if (
+            responseJson.status === 401 ||
+            responseJson.status === 404 ||
+            responseJson.status === 500
+          ) {
+            Popup.alert("Проверьте правльность введенных данных");
+            return;
           } else {
-            console.log(responseJson.token);
             localStorage.setItem("token", responseJson.token);
             localStorage.setItem("date", new Date(responseJson.expiration));
             navigate("/");
           }
         });
     } catch (e) {
-      console.log(e);
+      Popup.alert(e.message);
+
+      return;
     }
   };
   const handleCallbackLogin = (childData) => {
@@ -54,10 +61,7 @@ const Login = () => {
     navigate("/registration");
   };
   useEffect(() => {
-    console.log(localStorage.getItem("date"));
-    console.log(new Date(localStorage.getItem("date")) >= new Date());
     if (new Date(localStorage.getItem("date")) >= new Date()) {
-      console.log("sdsd");
       navigate("/");
     }
   }, []);

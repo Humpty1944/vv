@@ -2,7 +2,6 @@ import React from "react";
 
 class InputField extends React.Component {
   render() {
-    console.log(this.props.className);
     return (
       <div className="inputField">
         <input

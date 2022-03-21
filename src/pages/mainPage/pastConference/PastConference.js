@@ -7,23 +7,25 @@ import report_img from "./report.png";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
 import ReactLoading from "react-loading";
+import Popup from "react-popup";
+
 const PastConference = (props) => {
   let navigate = useNavigate();
   const showInfo = (rowData) => {
     // props.parentCallback(report_id);
     var ind = dataUsers.findIndex((object) => {
-      return object.email === rowData[1];
+      return object.name === rowData[0];
     });
-    console.log(ind)
-    console.log(data_index)
+
     sessionStorage.setItem("info", rowData);
-    sessionStorage.setItem("infoID", data_index[ind] );
+    sessionStorage.setItem("infoID", data_index[ind]);
     navigate("/report");
   };
   const options = {
     filterType: "checkbox",
     pagination: true,
     rowsPerPage: 6,
+    selectableRows: false,
     onRowClick: showInfo,
     downloadOptions: { filename: "pastConference.csv", separator: ";" },
     onDownload: (buildHead, buildBody, columns, data) => {
@@ -32,8 +34,6 @@ const PastConference = (props) => {
   };
 
   const columns = [
-  
-
     {
       name: "name",
       label: "Название",
@@ -106,17 +106,14 @@ const PastConference = (props) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const handleLoading = () => {
-    console.log(isLoading)
     setIsLoading(false);
-    }
-    
-    useEffect(()=>{
-      console.log(isLoading)
-    window.addEventListener("load",handleLoading);
-    return () => window.removeEventListener("load",handleLoading);
-    },[])
+  };
+
+  useEffect(() => {
+    window.addEventListener("load", handleLoading);
+    return () => window.removeEventListener("load", handleLoading);
+  }, []);
   const handleResize = (e) => {
-    console.log(size);
     setSize(window.innerWidth);
   };
   useEffect(() => {
@@ -133,9 +130,8 @@ const PastConference = (props) => {
       axios
         .get(api, { headers: { Authorization: `Bearer ${token}` } })
         .then((res) => {
-          console.log(res.data);
-          let r = res.data.filter((w) => new Date(w.startTime) <=new Date());
-          console.log(r)
+          let r = res.data.filter((w) => new Date(w.startTime) <= new Date());
+
           let d = [];
           let idd = [];
           for (let i = 0; i < r.length; i++) {
@@ -144,31 +140,32 @@ const PastConference = (props) => {
               date: r[i].started,
               participants: r[i].usersAtMeeting.length,
               report: "ДА",
-
             });
             idd.push(r[i].meetingID);
           }
           setData(d);
           setIndexes(idd);
-          setIsLoading(false)
+          setIsLoading(false);
           // setFullname(res.data.fullName);
           // setEmail(res.data.email);
           // setUsername(res.data.userName);
         })
         .catch(function (error) {
-          console.log(error.response.status); // 401
-          console.log(error.response.data.error); //Please Authenticate or whatever returned from server
           if (error.response.status == 403 || error.response.status == 401) {
             localStorage.setItem("token", "");
             localStorage.setItem("date", "");
             navigate("/login");
+          } else {
+            Popup.alert(
+              "Пожалуйста, подождите несколько минут и повторите запрос"
+            );
           }
         });
-    } catch (e) {
-      console.log("resdsdsads");
-    }
+    } catch (e) {}
   }, []);
-  return isLoading ? (<ReactLoading type={'spin'} color="#000" />): (
+  return isLoading ? (
+    <ReactLoading type={"spin"} color="#000" />
+  ) : (
     <div
       style={{
         margin: "0 auto",

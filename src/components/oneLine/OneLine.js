@@ -44,7 +44,7 @@ const OneLine = (props) => {
   const handleChange = (prop) => (event) => {
     setValues({ ...values, [prop]: event.target.value });
     props.parentCallback(event.target.value);
-    console.log(props.check(event.target.value));
+
     if (!props.check(event.target.value)) {
       setError(true);
     } else {

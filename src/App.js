@@ -9,6 +9,7 @@ import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import ReportPage from "./pages/reportPage/ReportPage";
 import Login from "./pages/login/Login";
 import Registration from "./pages/registration/Registration";
+
 function App() {
   return (
     <div className="App">

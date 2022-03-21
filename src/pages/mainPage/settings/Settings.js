@@ -4,6 +4,10 @@ import "./Settings.css";
 import Button from "@mui/material/Button";
 import { Box, FormControl } from "@mui/material";
 import axios from "axios";
+import Popup from "react-popup";
+import ImageUploader from "react-images-upload";
+import { NavLink, useNavigate } from "react-router-dom";
+
 const checkEmail = (e) => {
   return (
     e === "" ||
@@ -19,23 +23,29 @@ const checkUserName = (e) => {
   return !e.includes(" ") || e === "";
 };
 const checkPassword = (e) => {
-  return e === "" || e.match(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/);
+  return (
+    e === "" ||
+    e.match(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,12}$/
+    )
+  );
 };
 const checkOldPassword = (e) => {
   return true;
 };
 
-const Settings = () => {
+const Settings = (props) => {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordRepeat, setNewPasswordRepeat] = useState("");
-  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [file, setFile] = useState();
+  const role = sessionStorage.getItem("roleUser");
   let isNameChanged = false;
   const checkRepeatPassword = (e) => {
-    return e === "" || newPasswordRepeat === "" || e === newPasswordRepeat;
+    return e === "" || newPasswordRepeat === "" || e === newPassword;
   };
   const saveChange = () => {};
   const handleCallbackFullname = (childData) => {
@@ -57,23 +67,70 @@ const Settings = () => {
   const handleCallbackNewPasswordRepeat = (childData) => {
     setNewPasswordRepeat(childData);
   };
+  const onDrop = (pictureFiles, pictureDataURLs) => {
+    let form = new FormData();
 
+    if (pictureFiles.length === 1) {
+      form.append("File", pictureFiles[0], pictureFiles[0].name);
+
+      setFile(form);
+    } else {
+      setFile(null);
+    }
+    // }
+    // setIsLoadingFile(false);
+  };
+
+  const checkRole = (role) => {
+    if (role !== "SuperAdmin") {
+      return (
+        <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+          <FormControl
+            sx={{
+              height: 180,
+              marginLeft: "30px",
+            }}
+            variant="standard"
+          >
+            <div className="imageUpload">
+              <ImageUploader
+                withPreview={true}
+                label={""}
+                withIcon={false}
+                buttonText="Загрузите свое фото"
+                onChange={onDrop}
+                imgExtension={[".jpg", ".png", ".jpeg"]}
+                singleImage={true}
+                className="fileContainer"
+              />
+              <div
+                style={{
+                  height: "50px",
+                }}
+              ></div>
+            </div>
+          </FormControl>
+        </Box>
+      );
+    }
+  };
   const handleUpdate = () => {
     let token = localStorage.getItem("token");
-    const api_fullName = "https://api.ezmeets.live/v1/Users/ChangeFullName";
-    const api_Password = "https://api.ezmeets.live/v1/Users/ChangePassword";
+    const api_fullName =
+      "https://api.ezmeets.live/v1/Users/ChangeFullName?newFullName=";
+    const api_Password = "https://api.ezmeets.live/v1/Users/ChangePassword?";
+    const api_Avatar = "https://api.ezmeets.live/v1/Users/ChangeAvatar";
     if (isNameChanged) {
-      let data = {
-        newFullName: fullname,
-      };
-
       axios
-        .post(api_fullName, data, {
+        .post(api_fullName + fullname, null, {
           headers: { Authorization: `Bearer ${token}` },
         })
-        .then((res) => console.log(res));
+        .then((res) => {
+          //Popup.alert("Данные изменены");
+          props.parentCallback("yes");
+        });
     }
-    console.log(newPassword);
+
     if (
       oldPassword !== "" &&
       newPassword !== "" &&
@@ -82,39 +139,85 @@ const Settings = () => {
       newPassword !== undefined &&
       newPasswordRepeat !== undefined
     ) {
-      let data = {
-        currentPassword: oldPassword,
-        newPassword: newPassword,
-      };
+      // let data = {
+      //   currentPassword: oldPassword,
+      //   newPassword: newPassword,
+      // };
       axios
-        .post(api_Password, data, {
-          headers: { Authorization: `Bearer ${token}` },
+        .post(
+          api_Password +
+            "currentPassword=" +
+            oldPassword +
+            "&newPassword=" +
+            newPassword,
+          null,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then((res) => {
+          Popup.alert("Данные изменены");
+          props.parentCallback("yes");
+        });
+    }
+    // console.log(file);
+    if (file !== null || file !== undefined || file !== "") {
+      console.log(file);
+      try {
+        fetch(api_Avatar, {
+          method: "post",
+          headers: {
+            ContentType: "multipart/form-data",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: file,
+          redirect: "follow",
         })
-        .then((res) => console.log(res));
+          .then((response) => response.json())
+          .then((responseJson) => {
+            console.log(responseJson);
+            if (
+              responseJson.status === 401 ||
+              responseJson.status === 404 ||
+              responseJson.status === 500
+            ) {
+              Popup.alert("Проверьте правльность введенных данных");
+              return;
+            } else {
+              window.location.reload(false);
+              // setIsLoading(false);
+            }
+          });
+      } catch (e) {
+        console.log(e);
+      }
     }
   };
+  const navigate = useNavigate();
   useEffect(() => {
-    console.log("aaaaaa");
     const api = "https://api.ezmeets.live/v1/Users/CurrentUser";
     let token = localStorage.getItem("token");
     try {
       axios
         .get(api, { headers: { Authorization: `Bearer ${token}` } })
         .then((res) => {
-          console.log(res.data);
           setFullname(res.data.fullName);
           setEmail(res.data.email);
           setUsername(res.data.userName);
         })
         .catch(function (error) {
-          console.log(error.response.status); // 401
-          console.log(error.response.data.error); //Please Authenticate or whatever returned from server
-
-          alert(error.response.data.error);
+          if (error.response.status === 401) {
+            localStorage.setItem("token", "");
+            localStorage.setItem("date", "");
+            navigate("/login");
+          } else {
+            Popup.alert(
+              "Пожалуйста, подождите несколько минут и повторите запрос"
+            );
+          }
         });
-    } catch (e) {
-      console.log("resdsdsads");
-    }
+    } catch (e) {}
   }, []);
   return (
     <div>
@@ -192,6 +295,33 @@ const Settings = () => {
                 warning="Введите корректный логин"
               />
             </FormControl>
+            {checkRole(role)}
+            {/* <Box sx={{ display: "flex", flexWrap: "wrap" }}>
+              <FormControl
+                sx={{
+                  height: 180,
+                }}
+                variant="standard"
+              >
+                <div className="imageUpload">
+                  <ImageUploader
+                    withPreview={true}
+                    label={""}
+                    withIcon={false}
+                    buttonText="Загрузите свое фото"
+                    onChange={onDrop}
+                    imgExtension={[".jpg", ".png", ".jpeg"]}
+                    singleImage={true}
+                    className="fileContainer"
+                  />
+                  <div
+                    style={{
+                      height: "50px",
+                    }}
+                  ></div>
+                </div>
+              </FormControl>
+            </Box> */}
             <Box sx={{ display: "flex", flexWrap: "wrap" }}>
               <FormControl
                 sx={{
@@ -221,7 +351,7 @@ const Settings = () => {
                   text="Новый пароль"
                   parentCallback={handleCallbackNewPassword}
                   check={checkPassword}
-                  warning="В пароле должно быть 6 символов и хотя бы одна цифра, заглавная и строчная буквы"
+                  warning="В пароле должно быть от 6 до 12 символов и хотя бы одна цифра, заглавная, строчная буквы, специальный символ"
                 />
               </FormControl>
             </Box>
@@ -236,8 +366,8 @@ const Settings = () => {
                   type="password"
                   text="Подтвердить новый пароль"
                   parentCallback={handleCallbackNewPasswordRepeat}
-                  check={checkPassword}
-                  warning="В пароле должно быть 6 символов и хотя бы одна цифра, заглавная и строчная буквы"
+                  check={checkRepeatPassword}
+                  warning="Пароли должны совпадать"
                 />
                 <div style={{ height: "50px" }} />
                 <Button
@@ -258,81 +388,6 @@ const Settings = () => {
         </Box>
       </div>
     </div>
-    // <div className="settings">
-    //   <OneLine
-    //     type="text"
-    //     placeholder=""
-    //     value={fullname}
-    //     onChange={setFullname}
-    //     className="inputField"
-    //     text="ФИО"
-    //     warning="sdasjhkjhkfgfdgfdddsvsdjhjkhjhjkhjjhjkhjkhjhgyuguyguygygygdsada"
-    //     check={false}
-    //   ></OneLine>
-    //   <OneLine
-    //     type="text"
-    //     placeholder=""
-    //     value={email}
-    //     onChange={setEmail}
-    //     className="email"
-    //     text="Почта"
-    //     warning="sdasjhkjhkfgfdgfdddsvsdjhjkhjhjkhjjhjkhjkhjhgyuguyguygygygdsada"
-    //     check={false}
-    //   ></OneLine>
-    //   <OneLine
-    //     type="text"
-    //     placeholder=""
-    //     value={username}
-    //     onChange={setUsername}
-    //     className="inputField"
-    //     text="Логин"
-    //     warning="sdasjhkjhkfgfdgfdddsvsdjhjkhjhjkhjjhjkhjkhjhgyuguyguygygygdsada"
-    //     check={false}
-    //   ></OneLine>
-    //   <OneLine
-    //     type="password"
-    //     placeholder=""
-    //     value={oldPassword}
-    //     onChange={oldPassword}
-    //     className="inputField"
-    //     text="Старый пароль"
-    //     warning="sdasjhkjhkfgfdgfdddsvsdjhjkhjhjkhjjhjkhjkhjhgyuguyguygygygdsada"
-    //     check={false}
-    //   ></OneLine>
-    //   <OneLine
-    //     type="password"
-    //     placeholder=""
-    //     value={newPassword}
-    //     onChange={newPassword}
-    //     className="inputField"
-    //     text="Новый пароль"
-    //     warning="sdasjhkjhkfgfdgfdddsvsdjhjkhjhjkhjjhjkhjkhjhgyuguyguygygygdsada"
-    //     check={false}
-    //   ></OneLine>
-    //   <OneLine
-    //     type="password"
-    //     placeholder=""
-    //     value={newPasswordRepeat}
-    //     onChange={setNewPasswordRepeat}
-    //     className="inputField"
-    //     text="Подтвердить новый пароль"
-    //     warning="sdasjhkjhkfgfdgfdddsvsdjhjkhjhjkhjjhjkhjkhjhgyuguyguygygygdsada"
-    //     check={false}
-    //   ></OneLine>
-
-    //   <Button
-    //     style={{
-    //       bottom: 0,
-    //       // right: 0,
-    //       marginRight: "-50pc",
-    //       top: "unset",
-    //       left: "unset",
-    //     }}
-    //     variant="outlined"
-    //   >
-    //     Сохранить
-    //   </Button>
-    // </div>
   );
 };
 export default Settings;
