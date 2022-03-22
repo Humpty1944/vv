@@ -174,6 +174,7 @@ const FutureConference = (props) => {
     return filtered;
   }
   async function fetchData(arr, token, d, idd, usAl) {
+    const currUserRole = sessionStorage.getItem('roleUser')
     for (let i = 0; i < arr.length; i++) {
       try {
         let f = await fetch(
@@ -189,7 +190,7 @@ const FutureConference = (props) => {
               if (data.message === "Meeting has not started yet") {
                 d[i]["url"] = "Ссылка не сгенерирована";
               }
-              if (
+             else if (
                 data.status === 400 ||
                 data.status === 404 ||
                 data.status === 204 ||
@@ -197,10 +198,19 @@ const FutureConference = (props) => {
               ) {
                 d[i]["url"] = "delete";
               }
+             
+             else if (currUserRole==='SuperAdmin'){
+              console.log(currUserRole)
+                d[i]["url"] = "У вас нет доступа к ссылке на данную конференцию";
+              }
             });
           } else {
             return response.text().then((text) => {
               d[i]["url"] = text;
+              if (currUserRole==='SuperAdmin'){
+                console.log(currUserRole)
+                  d[i]["url"] = "У вас нет доступа к ссылке на данную конференцию";
+                }
             });
           }
         });
@@ -233,8 +243,8 @@ const FutureConference = (props) => {
   const [load2, setLoad2] = useState(false);
   const [userAllowed, setUserAllowed] = useState([]);
   async function fetchAllData() {
-    // const api = "https://api.ezmeets.live/v1/Meetings/GetAll";
-    const api = "https://api.ezmeets.live/v1/Meetings/GetScheduled";
+     const api = "https://api.ezmeets.live/v1/Meetings/GetAll";
+    //const api = "https://api.ezmeets.live/v1/Meetings/GetScheduled";
     let token = sessionStorage.getItem("token");
 
     console.log(token);
@@ -248,7 +258,7 @@ const FutureConference = (props) => {
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
-          Popup.alert("Проверьте правльность введенных данных");
+        //  Popup.alert("Проверьте правльность введенных данных");
         }
       });
     let res = await ax.data;
@@ -256,9 +266,10 @@ const FutureConference = (props) => {
     let d = [];
     let idd = [];
     let usAl = [];
+    const currUserRole = sessionStorage.getItem('roleUser')
     for (let i = 0; i < res.length; i++) {
       let findSameUser = res[i].allowedUsers.find((r) => r.userID === idUser);
-      if (findSameUser !== undefined && findSameUser !== null) {
+      if ((findSameUser !== undefined && findSameUser !== null)||currUserRole==='SuperAdmin') {
         let dateCur = new Date(res[i].startTime);
         dateCur.setHours(dateCur.getHours() + 3);
         if (res[i].hasEnded === false) {

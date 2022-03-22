@@ -293,7 +293,7 @@ const Settings = (props) => {
               responseJson.status === 404 ||
               responseJson.status === 500
             ) {
-              Popup.alert("Проверьте правльность введенных данных");
+              Popup.alert("Проверьте правильность введенных данных");
               return;
             } else {
               window.location.reload(false);
