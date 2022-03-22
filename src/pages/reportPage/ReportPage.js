@@ -68,7 +68,6 @@ const ReportPage = (props) => {
         filter: true,
         sort: true,
         customBodyRender: (data, type, row) => {
-
           let value = <Chapters value={data} />;
           return <TableCell key={row}>{value}</TableCell>;
         },
@@ -161,7 +160,7 @@ const ReportPage = (props) => {
         console.log(error);
       });
     let result = await response.data;
-console.log(result)
+    console.log(result);
     setConferenceName(result.name);
     setConferenceStart(new Date(result.startTime).toLocaleString());
     setConferenceParticipantsCount(result.usersAtMeeting.length);
@@ -169,9 +168,11 @@ console.log(result)
 
     for (let i = 0; i < result.usersAtMeeting.length; i++) {
       let currTime = workWithLog(result.usersAtMeeting[i].camStatuses);
-      let sumTimeEnterLeave = workWithLogEnterLeave(result.usersAtMeeting[i].connectionLogs)
+      let sumTimeEnterLeave = workWithLogEnterLeave(
+        result.usersAtMeeting[i].connectionLogs
+      );
       //let endTiem = new Date(result.endingTime);
-      console.log(currTime)
+      console.log(currTime);
       dd.push({
         fullName: result.usersAtMeeting[i].user.fullName,
         email: result.usersAtMeeting[i].user.email,
@@ -179,8 +180,7 @@ console.log(result)
         status: currTime[0],
         allTime: Number(sumTimeEnterLeave[1].toFixed(1)) + " мин",
         problems: currTime[2],
-        enterAndExit: sumTimeEnterLeave[0]
-
+        enterAndExit: sumTimeEnterLeave[0],
       });
     }
     setData(dd);
@@ -192,7 +192,8 @@ console.log(result)
     let resArray = [];
     let enter = 0;
     let leave = 0;
-    let accuracyProblems = "\n"
+    let accuracyProblems = "\n";
+    let sumCount = connectionLogs.length;
     for (let i = 0; i < connectionLogs.length; i++) {
       if (connectionLogs[i].action === "enter") {
         enter = new Date(connectionLogs[i].dateTime);
@@ -208,68 +209,73 @@ console.log(result)
         resArray[connectionLogs[i].action] += 1;
       }
 
-      if (Math.round(parseFloat(connectionLogs[i].accuracy)*100000) < Math.round(parseFloat(0.5)*100000)){
-        accuracyProblems+='\n'+new Date(connectionLogs[i].dateTime).toLocaleString()+" "+"точность: "+connectionLogs[i].accuracy 
+      if (connectionLogs[i].accuracy * 100 < 50) {
+        accuracyProblems +=
+          "\n" +
+          new Date(connectionLogs[i].dateTime).toLocaleString() +
+          " " +
+          "точность: " +
+          connectionLogs[i].accuracy;
       }
-    
     }
-    let sumCount=0
+
     const sumValues = (resArray) =>
       Object.values(resArray).reduce((a, b) => a + b);
-      if (resArray.length<=1){
-        sumCount=1
-      }else{
-        sumCount = sumValues(resArray);
-      }
-   
+    // if (resArray.length <= 1) {
+    //   sumCount = 1;
+    // } else {
+    //   sumCount = sumValues(resArray);
+    // }
+
     for (const [key, value] of Object.entries(resArray)) {
-      res += "\n" + key + ": " + Number((value / sumCount).toFixed(3))*100+"%";
+      res +=
+        "\n" + key + ": " + Number((value / sumCount).toFixed(3)) * 100 + "%";
     }
     return [res, sumTime / 6000, accuracyProblems];
   };
   const workWithLogEnterLeave = (connectionLogs) => {
     let res = "\n";
     let sumTime = 0;
-    let resArray = [{enter: 0}, {leave: 0}];
+    let resArray = [{ enter: 0 }, { leave: 0 }];
     let enter = 0;
     let leave = 0;
-    let enterCount = "Enter: "
-    let LeaveCount = "Leave: "
-    console.log(connectionLogs.length)
+    let enterCount = "Enter: ";
+    let LeaveCount = "Leave: ";
+    console.log(connectionLogs.length);
     for (let i = 0; i < connectionLogs.length; i++) {
-     console.log(connectionLogs[i].action=== "enter")
+      console.log(connectionLogs[i].action === "enter");
       if (connectionLogs[i].action === "enter") {
         enter = new Date(connectionLogs[i].dateTime);
-        enterCount+=enter.toLocaleString()+"\n"
-        console.log(enterCount)
+        enterCount += enter.toLocaleString() + "\n";
+        console.log(enterCount);
       }
       if (connectionLogs[i].action === "leave") {
         leave = new Date(connectionLogs[i].dateTime);
-        LeaveCount+=leave.toLocaleString()+"\n"
-        console.log(LeaveCount)
+        LeaveCount += leave.toLocaleString() + "\n";
+        console.log(LeaveCount);
         sumTime += leave - enter;
       }
 
       // if (resArray[connectionLogs[i].action] === undefined) {
       //   resArray[connectionLogs[i].action] = 1;
-       
+
       // } else {
       //   resArray[connectionLogs[i].action] += 1;
       // }
-      console.log(resArray)
+      console.log(resArray);
     }
-    let sumCount=enterCount+LeaveCount
-    res+=enterCount+LeaveCount
-    console.log(resArray)
+    let sumCount = enterCount + LeaveCount;
+    res += enterCount + LeaveCount;
+    console.log(resArray);
     const sumValues = (resArray) =>
       Object.values(resArray).reduce((a, b) => a + b);
-      if (resArray.length<1){
-        sumCount=1
-      }else{
-        sumCount = sumValues(resArray);
-      }
-  //  res+="Enter: "+enterCount
-  //  res+="\nLeave: "+LeaveCount
+    if (resArray.length < 1) {
+      sumCount = 1;
+    } else {
+      sumCount = sumValues(resArray);
+    }
+    //  res+="Enter: "+enterCount
+    //  res+="\nLeave: "+LeaveCount
     // for (const [key, value] of Object.entries(resArray)) {
     //   res += "\n" + key + ": " + Number((value / sumCount).toFixed(3))*100+"%";
     // }
