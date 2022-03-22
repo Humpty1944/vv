@@ -107,7 +107,6 @@ const FutureConference = (props) => {
       })
         .then((res) => console.log(res))
         .then((responseJson) => {
-          console.log(responseJson);
           if (
             responseJson.status === 401 ||
             responseJson.status === 404 ||
@@ -199,18 +198,18 @@ const FutureConference = (props) => {
                 d[i]["url"] = "delete";
               }
              
-             else if (currUserRole==='SuperAdmin'){
-              console.log(currUserRole)
-                d[i]["url"] = "У вас нет доступа к ссылке на данную конференцию";
-              }
+            //  else if (currUserRole==='SuperAdmin'){
+            //   console.log(currUserRole)
+            //     d[i]["url"] = "У вас нет доступа к ссылке на данную конференцию";
+            //   }
             });
           } else {
             return response.text().then((text) => {
               d[i]["url"] = text;
-              if (currUserRole==='SuperAdmin'){
-                console.log(currUserRole)
-                  d[i]["url"] = "У вас нет доступа к ссылке на данную конференцию";
-                }
+              // if (currUserRole==='SuperAdmin'){
+              //   console.log(currUserRole)
+              //     d[i]["url"] = "У вас нет доступа к ссылке на данную конференцию";
+              //   }
             });
           }
         });
@@ -229,8 +228,9 @@ const FutureConference = (props) => {
       }
     }
     const indices = Array.from(arrD.keys());
-    indices.sort((a, b) => arrD[a].date.localeCompare(arrD[b].date));
-
+  //  indices.sort((a, b) => arrD[a].date.localeCompare(arrD[b].date));
+    indices.sort((a, b) => arrD[a].dateToString - (arrD[b].dateToString));
+    console.log(indices)
     const sortedDate = indices.map((i) => arrD[i]);
     const sortedId = indices.map((i) => idNew[i]);
     const sortedusAl = indices.map((i) => usAlNew[i]);
@@ -247,9 +247,7 @@ const FutureConference = (props) => {
     //const api = "https://api.ezmeets.live/v1/Meetings/GetScheduled";
     let token = sessionStorage.getItem("token");
 
-    console.log(token);
     let idUser = localStorage.getItem("idUser");
-    console.log(idUser);
     let ax = await axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
       .catch(function (error) {
@@ -272,17 +270,24 @@ const FutureConference = (props) => {
       if ((findSameUser !== undefined && findSameUser !== null)||currUserRole==='SuperAdmin') {
         let dateCur = new Date(res[i].startTime);
         dateCur.setHours(dateCur.getHours() + 3);
+        const diff = (dateCur-new Date())/36000000
+        // console.log(diff)
+        // console.log((diff<0&& diff>-2)||(diff>0))
         if (res[i].hasEnded === false) {
+        if ((diff<0&& diff>-2)||(diff>0)){
           // console.log(res);
           d.push({
             name: res[i].name,
             date: dateCur.toLocaleString(),
             participants: remove_duplicates_es6(res[i].allowedUsers).length,
             url: "resURL",
+            dateToString: dateCur
           });
           idd.push(res[i].meetingID);
           usAl.push(res[i].allowedUsers);
+        
         }
+      }
       }
     }
 

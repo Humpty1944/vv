@@ -68,9 +68,6 @@ const ReportPage = (props) => {
         filter: true,
         sort: true,
         customBodyRender: (data, type, row) => {
-          let text = data;
-          if (text !== "Ссылка не сгенерирована")
-            text = "Нажмите на строку, чтобы скопировать ссылку";
 
           let value = <Chapters value={data} />;
           return <TableCell key={row}>{value}</TableCell>;
@@ -83,6 +80,30 @@ const ReportPage = (props) => {
       options: {
         filter: false,
         sort: false,
+      },
+    },
+    {
+      name: "problems",
+      label: "Проблемные события",
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRender: (data, type, row) => {
+          let value = <Chapters value={data} />;
+          return <TableCell key={row}>{value}</TableCell>;
+        },
+      },
+    },
+    {
+      name: "enterAndExit",
+      label: "Входы и выходы",
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRender: (data, type, row) => {
+          let value = <Chapters value={data} />;
+          return <TableCell key={row}>{value}</TableCell>;
+        },
       },
     },
   ];
@@ -129,7 +150,7 @@ const ReportPage = (props) => {
 
   async function fetchData() {
     let id = sessionStorage.getItem("infoID");
-    const api1 = "https://api.ezmeets.live/v1/Meetings/Get?id=" + id;
+    const api1 = "https://api.ezmeets.live/v1/Meetings/Get?meetingID=" + id;
     let token = sessionStorage.getItem("token");
     let response = await axios
       .get(api1, {
@@ -140,34 +161,38 @@ const ReportPage = (props) => {
         console.log(error);
       });
     let result = await response.data;
-
+console.log(result)
     setConferenceName(result.name);
     setConferenceStart(new Date(result.startTime).toLocaleString());
     setConferenceParticipantsCount(result.usersAtMeeting.length);
     let dd = [];
 
     for (let i = 0; i < result.usersAtMeeting.length; i++) {
-      let currTime = workWithLog(result.usersAtMeeting[i].connectionLogs);
+      let currTime = workWithLog(result.usersAtMeeting[i].camStatuses);
+      let sumTimeEnterLeave = workWithLogEnterLeave(result.usersAtMeeting[i].connectionLogs)
       //let endTiem = new Date(result.endingTime);
-      console.log(currTime);
+      console.log(currTime)
       dd.push({
         fullName: result.usersAtMeeting[i].user.fullName,
         email: result.usersAtMeeting[i].user.email,
         group: result.usersAtMeeting[i].user.group,
         status: currTime[0],
-        allTime: Number(currTime[1].toFixed(1)) + " мин",
+        allTime: Number(sumTimeEnterLeave[1].toFixed(1)) + " мин",
+        problems: currTime[2],
+        enterAndExit: sumTimeEnterLeave[0]
+
       });
     }
     setData(dd);
     setIsLoading(false);
   }
   const workWithLog = (connectionLogs) => {
-    let res = "";
+    let res = "\n";
     let sumTime = 0;
     let resArray = [];
     let enter = 0;
     let leave = 0;
-    console.log(connectionLogs.length);
+    let accuracyProblems = "\n"
     for (let i = 0; i < connectionLogs.length; i++) {
       if (connectionLogs[i].action === "enter") {
         enter = new Date(connectionLogs[i].dateTime);
@@ -182,16 +207,72 @@ const ReportPage = (props) => {
       } else {
         resArray[connectionLogs[i].action] += 1;
       }
-    }
 
+      if (Math.round(parseFloat(connectionLogs[i].accuracy)*100000) < Math.round(parseFloat(0.5)*100000)){
+        accuracyProblems+='\n'+new Date(connectionLogs[i].dateTime).toLocaleString()+" "+"точность: "+connectionLogs[i].accuracy 
+      }
+    
+    }
+    let sumCount=0
     const sumValues = (resArray) =>
       Object.values(resArray).reduce((a, b) => a + b);
-    const sumCount = sumValues(resArray);
-    console.log(sumCount);
+      if (resArray.length<=1){
+        sumCount=1
+      }else{
+        sumCount = sumValues(resArray);
+      }
+   
     for (const [key, value] of Object.entries(resArray)) {
-      console.log(key, value);
-      res += "\n" + key + ": " + Number((value / sumCount).toFixed(3));
+      res += "\n" + key + ": " + Number((value / sumCount).toFixed(3))*100+"%";
     }
+    return [res, sumTime / 6000, accuracyProblems];
+  };
+  const workWithLogEnterLeave = (connectionLogs) => {
+    let res = "\n";
+    let sumTime = 0;
+    let resArray = [{enter: 0}, {leave: 0}];
+    let enter = 0;
+    let leave = 0;
+    let enterCount = "Enter: "
+    let LeaveCount = "Leave: "
+    console.log(connectionLogs.length)
+    for (let i = 0; i < connectionLogs.length; i++) {
+     console.log(connectionLogs[i].action=== "enter")
+      if (connectionLogs[i].action === "enter") {
+        enter = new Date(connectionLogs[i].dateTime);
+        enterCount+=enter.toLocaleString()+"\n"
+        console.log(enterCount)
+      }
+      if (connectionLogs[i].action === "leave") {
+        leave = new Date(connectionLogs[i].dateTime);
+        LeaveCount+=leave.toLocaleString()+"\n"
+        console.log(LeaveCount)
+        sumTime += leave - enter;
+      }
+
+      // if (resArray[connectionLogs[i].action] === undefined) {
+      //   resArray[connectionLogs[i].action] = 1;
+       
+      // } else {
+      //   resArray[connectionLogs[i].action] += 1;
+      // }
+      console.log(resArray)
+    }
+    let sumCount=enterCount+LeaveCount
+    res+=enterCount+LeaveCount
+    console.log(resArray)
+    const sumValues = (resArray) =>
+      Object.values(resArray).reduce((a, b) => a + b);
+      if (resArray.length<1){
+        sumCount=1
+      }else{
+        sumCount = sumValues(resArray);
+      }
+  //  res+="Enter: "+enterCount
+  //  res+="\nLeave: "+LeaveCount
+    // for (const [key, value] of Object.entries(resArray)) {
+    //   res += "\n" + key + ": " + Number((value / sumCount).toFixed(3))*100+"%";
+    // }
     return [res, sumTime / 6000];
   };
   useEffect(() => {
