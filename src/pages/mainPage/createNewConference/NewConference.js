@@ -153,13 +153,10 @@ const NewConference = (props) => {
   const navigate = useNavigate();
   const [usersAll, setUserAll] = useState([]);
   async function fetchData() {
-    const api1 = "https://api.ezmeets.live/v1/Meetings/Get";
+    const api1 = "https://api.ezmeets.live/v1/Meetings/Get?meetingID=";
     let token = sessionStorage.getItem("token");
     let response = await axios
-      .get(api1, {
-        params: {
-          id: props.conferenceID,
-        },
+      .get(api1 + props.conferenceID, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {

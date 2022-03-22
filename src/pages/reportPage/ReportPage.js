@@ -172,7 +172,6 @@ const ReportPage = (props) => {
         result.usersAtMeeting[i].connectionLogs
       );
       //let endTiem = new Date(result.endingTime);
-      console.log(currTime);
       dd.push({
         fullName: result.usersAtMeeting[i].user.fullName,
         email: result.usersAtMeeting[i].user.email,
@@ -204,7 +203,9 @@ const ReportPage = (props) => {
       }
 
       if (resArray[connectionLogs[i].action] === undefined) {
-        resArray[connectionLogs[i].action] = 1;
+        const curNameNowe = connectionLogs[i].action;
+        resArray.push({ [connectionLogs[i].action]: 1 });
+        //resArray[connectionLogs[i].action] = 1;
       } else {
         resArray[connectionLogs[i].action] += 1;
       }
@@ -226,8 +227,9 @@ const ReportPage = (props) => {
     // } else {
     //   sumCount = sumValues(resArray);
     // }
-
+    console.log(resArray);
     for (const [key, value] of Object.entries(resArray)) {
+      console.log(key);
       res +=
         "\n" + key + ": " + Number((value / sumCount).toFixed(3)) * 100 + "%";
     }

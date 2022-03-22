@@ -206,7 +206,7 @@ const Settings = (props) => {
             }}
             variant="standard"
           >
-            <p style={{ marginLeft: "-20px" }} id="labelParticipant">
+            <p style={{ marginLeft: "-15px" }} id="labelParticipant">
               Группа
             </p>
             <CreatableAsyncPaginate
@@ -329,6 +329,14 @@ const Settings = (props) => {
           setFullname(res.data.fullName);
           setEmail(res.data.email);
           setUsername(res.data.userName);
+          setGroup([res.data.group]);
+          setValue([
+            {
+              value: res.data.group,
+              label: res.data.group,
+            },
+          ]);
+          // setValue({ value: res.date.group, label: res.date.group });
         })
         .catch(function (error) {
           if (error.response.status === 401) {
@@ -336,9 +344,9 @@ const Settings = (props) => {
             localStorage.setItem("date", "");
             navigate("/login");
           } else {
-            Popup.alert(
-              "Пожалуйста, подождите несколько минут и повторите запрос"
-            );
+            // Popup.alert(
+            //   "Пожалуйста, подождите несколько минут и повторите запрос"
+            // );
           }
         });
     } catch (e) {}

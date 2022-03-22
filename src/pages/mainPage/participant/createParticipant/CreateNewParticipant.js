@@ -10,7 +10,7 @@ import { Box, Button, FormControl } from "@mui/material";
 import CheckboxLabel from "../../../../components/checkBox/CheckboxLabel";
 import { InputLabel, MenuItem, OutlinedInput, Select } from "@material-ui/core";
 import axios from "axios";
-import loadOptions from "./loadOptions";
+//import loadOptions from "./loadOptions";
 import { useNavigate } from "react-router-dom";
 
 import Popup from "react-popup";
@@ -429,6 +429,47 @@ const CreateNewParticipant = (props) => {
         });
     }
   };
+  async function loadOptions(search, loadedOptions) {
+    let token = sessionStorage.getItem("token");
+
+    const api = "https://api.ezmeets.live/v1/Users/GetGroups";
+    let options = [];
+
+    let a = await axios
+      .get(api, { headers: { Authorization: `Bearer ${token}` } })
+      .catch(function (error) {
+        Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
+      });
+
+    let res = await a.data;
+
+    let help = res.filter((n) => n);
+
+    for (let i = 0; i < help.length; i++) {
+      options.push({
+        value: help[i],
+        label: help[i],
+      });
+    }
+    let filteredOptions;
+
+    if (!search) {
+      filteredOptions = options;
+    } else {
+      const searchLower = search.toLowerCase();
+
+      filteredOptions = options.filter(({ label }) =>
+        label.toLowerCase().includes(searchLower)
+      );
+    }
+    const hasMore = false;
+    const slicedOptions = filteredOptions;
+
+    return {
+      options: slicedOptions,
+      hasMore,
+    };
+  }
   const [imgURL, setImageURL] = useState("");
   const showImage = (img) => {
     if (props.pageName === "Update" && (img !== null || img != undefined)) {
