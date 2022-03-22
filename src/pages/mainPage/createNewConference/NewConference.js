@@ -89,7 +89,7 @@ const NewConference = (props) => {
       });
       const json = await response.json();
       urllist.push(json);
-      console.log({ urllist });
+      // console.log({ urllist });
     }
     let a = await urllist;
     return a;
@@ -133,7 +133,7 @@ const NewConference = (props) => {
 
               // idd.push(r[i].meetingID);
             }
-            console.log(d);
+            // console.log(d);
             // setData(d);
             // setIndexes(idd);
             // setIsLoading(false);
@@ -144,9 +144,9 @@ const NewConference = (props) => {
           .catch(function (error) {});
       }
     } catch (e) {}
-    console.log(d);
+    //  console.log(d);
     setResult(d);
-    console.log(result);
+    //console.log(result);
     return result;
   }
 
@@ -168,9 +168,9 @@ const NewConference = (props) => {
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
-          Popup.alert(
-            "Пожалуйста, подождите несколько минут и повторите запрос"
-          );
+          // Popup.alert(
+          //   "Пожалуйста, подождите несколько минут и повторите запрос"
+          // );
         }
       });
 
@@ -271,9 +271,9 @@ const NewConference = (props) => {
       .then((response) => response.json())
       .then((responseJson) => {
         if (responseJson.status === "Error") {
-          Popup.alert(
-            "Пожалуйста, подождите несколько минут и повторите запрос"
-          );
+          // Popup.alert(
+          //   "Пожалуйста, подождите несколько минут и повторите запрос"
+          // );
         } else {
           props.parentCallback("a");
         }
@@ -333,7 +333,7 @@ const NewConference = (props) => {
     })
       .then((response) => response.json())
       .then((responseJson) => {
-        console.log(responseJson);
+        // console.log(responseJson);
         // if (responseJson.status === "Error") {
         //   Popup.alert(
         //     "Пожалуйста, подождите несколько минут и повторите запрос"
@@ -356,7 +356,7 @@ const NewConference = (props) => {
         createNewConference();
         //createNewConference();
       } else {
-        console.log(props.pageName === "Create");
+        // console.log(props.pageName === "Create");
         updateConference();
       }
     }
@@ -367,12 +367,12 @@ const NewConference = (props) => {
     // setUsername(childData);
   };
   const buttonCreateNewConference = () => {
-    console.log(nameConference);
-    console.log(nameConference === "");
+    // console.log(nameConference);
+    // console.log(nameConference === "");
     if (!nameConference.includes(" ") && nameConference !== "") {
       if (props.pageName === "Create") {
-        console.log(props.pageName === "Create");
-        console.log("wtf");
+        // console.log(props.pageName === "Create");
+        // console.log("wtf");
         createNewConference();
         //createNewConference();
       } else {
@@ -405,7 +405,7 @@ const NewConference = (props) => {
     let a = await axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
       .catch(function (error) {
-        Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
+        // Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
       });
 
     let res = await a.data;

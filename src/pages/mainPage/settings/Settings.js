@@ -138,7 +138,7 @@ const Settings = (props) => {
     let a = await axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
       .catch(function (error) {
-        Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
+        console.log(error);
       });
 
     let res = await a.data;
@@ -206,13 +206,14 @@ const Settings = (props) => {
             }}
             variant="standard"
           >
-            <p style={{ marginLeft: "-15px" }} id="labelParticipant">
+            <p style={{ marginLeft: "-5px" }} id="labelParticipant">
               Группа
             </p>
             <CreatableAsyncPaginate
               value={value}
+              isDisabled
               styles={customStyles}
-              loadOptions={loadOptions}
+              //loadOptions={loadOptions}
               onChange={handleGroup}
               isSearchable={true}
               placeholder=""

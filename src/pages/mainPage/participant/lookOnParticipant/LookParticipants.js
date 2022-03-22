@@ -137,9 +137,9 @@ const LookParticipants = (props) => {
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
-          Popup.alert(
-            "Пожалуйста, подождите несколько минут и повторите запрос"
-          );
+          // Popup.alert(
+          //   "Пожалуйста, подождите несколько минут и повторите запрос"
+          // );
         }
       });
     let result = await work.data;

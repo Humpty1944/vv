@@ -159,9 +159,9 @@ const CreateNewParticipant = (props) => {
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
-          Popup.alert(
-            "Пожалуйста, подождите несколько минут и повторите запрос"
-          );
+          // Popup.alert(
+          //   "Пожалуйста, подождите несколько минут и повторите запрос"
+          // );
         }
       });
     let responseRole = await axios
@@ -180,9 +180,9 @@ const CreateNewParticipant = (props) => {
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
-          Popup.alert(
-            "Пожалуйста, подождите несколько минут и повторите запрос"
-          );
+          // Popup.alert(
+          //   "Пожалуйста, подождите несколько минут и повторите запрос"
+          // );
         }
       });
     let user = await response.data;
@@ -333,13 +333,13 @@ const CreateNewParticipant = (props) => {
   };
 
   const updateUser = () => {
+    let token = sessionStorage.getItem("token");
     if (
       checkEmailFinal(email) &&
       checkFullnameFinal(fullname) &&
       roleUser !== "" &&
       roleUser !== undefined
     ) {
-      let token = sessionStorage.getItem("token");
       const api = "https://api.ezmeets.live/v1/Users/Update";
       let data = {
         id: id,
@@ -353,7 +353,7 @@ const CreateNewParticipant = (props) => {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
-          console.log(res);
+          //console.log(res);
         })
         .catch(function (error) {
           if (error.response.status === 401) {
@@ -362,24 +362,23 @@ const CreateNewParticipant = (props) => {
             //navigate("/login");
           }
         });
-
-      if (file !== null && file !== undefined) {
-        addNewPhoto();
-      }
-
-      if (roleUser !== "Участник") {
-        getPromotion();
-      }
-      let config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          accept: "text/plain",
-          "Content-Type": "application/json-patch+json",
-        },
-      };
-
-      props.parentCallback("a");
     }
+    if (file !== null && file !== undefined) {
+      addNewPhoto();
+    }
+
+    if (roleUser !== "Участник") {
+      getPromotion();
+    }
+    let config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accept: "text/plain",
+        "Content-Type": "application/json-patch+json",
+      },
+    };
+
+    props.parentCallback("a");
   };
 
   const buttonCreateNewParticipant = () => {
@@ -407,6 +406,7 @@ const CreateNewParticipant = (props) => {
           console.log(res);
         })
         .catch(function (error) {
+          console.log();
           if (error.response.status === 401) {
             sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
@@ -438,7 +438,7 @@ const CreateNewParticipant = (props) => {
     let a = await axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
       .catch(function (error) {
-        Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
+        //  Popup.alert("Пожалуйста, подождите несколько минут и повторите запрос");
       });
 
     let res = await a.data;
@@ -474,19 +474,10 @@ const CreateNewParticipant = (props) => {
   const showImage = (img) => {
     if (props.pageName === "Update" && (img !== null || img != undefined)) {
       return (
-        <div
-          style={
-            {
-              /*paddingRight: "200px" */
-            }
-          }
-        >
+        <div style={{}}>
           <a href={img} target="_blank">
             Предыдущая фотография
           </a>
-
-          {/* <h3>Фото</h3>
-          <img src={img} alt="new" /> */}
         </div>
       );
     }
