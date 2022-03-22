@@ -296,13 +296,7 @@ const CreateNewParticipant = (props) => {
     } catch (e) {}
   };
   const createUser = () => {
-    if (
-      checkEmailFinal(email) &&
-      checkFullnameFinal(fullname) &&
-      roleUser !== "" &&
-      roleUser !== undefined &&
-      group.length > 0
-    ) {
+    if (checkEmailFinal(email) && checkFullnameFinal(fullname)) {
       const api = "https://api.ezmeets.live/v1/Users/Register";
 
       axios
@@ -311,7 +305,6 @@ const CreateNewParticipant = (props) => {
           password: "123456Password@",
           fullName: fullname,
           email: email,
-          group: group[0],
         })
         .then((res) => {
           console.log(res);
@@ -398,14 +391,12 @@ const CreateNewParticipant = (props) => {
     } else {
       updateUser();
     }
-    // props.parentCallback("a");
-    //  window.location.reload(false);
+    props.parentCallback("a");
+    window.location.reload(false);
   };
   const getPromotion = () => {
     const apiAdmin = "https://api.ezmeets.live/v1/Users/MakeAdmin?userID=" + id;
-    const apiSuperAdmin = "https://api.ezmeets.live/v1/Users/MakeSuperAdmin";
     let token = sessionStorage.getItem("token");
-    const secret = "(Swk9kWq7;/3(*d-_<7uXscp9u%tjWmn9u%tjWmn";
 
     if (roleUser === "Модератор") {
       axios
@@ -419,20 +410,20 @@ const CreateNewParticipant = (props) => {
           }
         });
     }
-    if (roleUser === "Администратор") {
-      axios
-        .post(apiAdmin + "?userID=" + id + "&secret=" + secret, null, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {})
-        .catch(function (error) {
-          // if (error.response.status == 401) {
-          //   localStorage.setItem("token", "");
-          //   localStorage.setItem("date", "");
-          //   //navigate("/login");
-          // }
-        });
-    }
+    // if (roleUser === "Администратор") {
+    //   axios
+    //     .post(apiAdmin + "?userID=" + id + "&secret=" + secret, null, {
+    //       headers: { Authorization: `Bearer ${token}` },
+    //     })
+    //     .then((res) => {})
+    //     .catch(function (error) {
+    //       // if (error.response.status == 401) {
+    //       //   localStorage.setItem("token", "");
+    //       //   localStorage.setItem("date", "");
+    //       //   //navigate("/login");
+    //       // }
+    //     });
+    // }
   };
   async function loadOptions(search, loadedOptions) {
     let token = sessionStorage.getItem("token");
