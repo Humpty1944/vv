@@ -307,7 +307,7 @@ const CreateNewParticipant = (props) => {
 
       axios
         .post(api, {
-          userName: email,
+          userName: username,
           password: "123456Password@",
           fullName: fullname,
           email: email,
@@ -575,7 +575,7 @@ const CreateNewParticipant = (props) => {
           variant="standard"
         >
           <OneLine
-            disabled={true}
+            disabled={false}
             type="text"
             text="Логин"
             value={username}
