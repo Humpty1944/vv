@@ -118,12 +118,7 @@ const ReportPage = (props) => {
     onDownload: (buildHead, buildBody, columns, data) => {
       let x = [];
       let count = 0;
-      // for (let i of data) {
-      //   let j = Object.assign({}, i.data.slice(0, 4));
-      //   console.log(j);
-      //   x.push({ index: count, data: i.data.slice(0, 4) });
-      //   count++;
-      // }
+
       for (let i of data) {
         let j = Object.assign({}, i.data);
 
@@ -131,11 +126,7 @@ const ReportPage = (props) => {
         count++;
       }
 
-      return (
-        "\uFEFF" + createLabel(";\n") + buildHead(columns) + buildBody(x)
-        // buildHead(columns.slice(0, 4)) +
-        // buildBody(x)
-      );
+      return "\uFEFF" + createLabel(";\n") + buildHead(columns) + buildBody(x);
     },
     downloadOptions: { filename: filename + ".csv", separator: ";" },
     customToolbarSelect: (selectedRows, displayData, setSelectedRows) => (
@@ -160,7 +151,6 @@ const ReportPage = (props) => {
         console.log(error);
       });
     let result = await response.data;
-    console.log(result);
     setConferenceName(result.name);
     setConferenceStart(new Date(result.startTime).toLocaleString());
     setConferenceParticipantsCount(result.usersAtMeeting.length);
@@ -171,7 +161,6 @@ const ReportPage = (props) => {
       let sumTimeEnterLeave = workWithLogEnterLeave(
         result.usersAtMeeting[i].connectionLogs
       );
-      //let endTiem = new Date(result.endingTime);
       dd.push({
         fullName: result.usersAtMeeting[i].user.fullName,
         email: result.usersAtMeeting[i].user.email,
@@ -212,7 +201,7 @@ const ReportPage = (props) => {
 
       if (!resArray[curNameNowe]) {
         resArray[curNameNowe] = 0;
-        resArray[curNameNowe] = 1; //push(parseInt(1));
+        resArray[curNameNowe] = 1;
       } else {
         resArray[curNameNowe] = parseInt(resArray[curNameNowe]) + parseInt(1);
       }
@@ -227,11 +216,6 @@ const ReportPage = (props) => {
       }
     }
 
-    // if (resArray.length <= 1) {
-    //   sumCount = 1;
-    // } else {
-    //   sumCount = sumValues(resArray);
-    // }
     console.log(resArray);
 
     for (const [key, value] of Object.entries(resArray)) {
@@ -255,12 +239,10 @@ const ReportPage = (props) => {
       if (connectionLogs[i].action === "enter") {
         enter = new Date(connectionLogs[i].dateTime);
         enterCount += enter.toLocaleString() + "\n";
-        console.log(enterCount);
       }
       if (connectionLogs[i].action === "leave") {
         leave = new Date(connectionLogs[i].dateTime);
         LeaveCount += leave.toLocaleString() + "\n";
-        console.log(LeaveCount);
         sumTime += leave - enter;
       }
 
