@@ -143,7 +143,7 @@ const LookParticipants = (props) => {
         }
       });
     let result = await work.data;
-    console.log(result);
+    // console.log(result);
     let idd = [];
     for (let i = 0; i < work.data.length; i++) {
       d.push({

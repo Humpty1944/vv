@@ -173,7 +173,7 @@ const FutureConference = (props) => {
     return filtered;
   }
   async function fetchData(arr, token, d, idd, usAl) {
-    const currUserRole = sessionStorage.getItem('roleUser')
+    const currUserRole = sessionStorage.getItem("roleUser");
     for (let i = 0; i < arr.length; i++) {
       try {
         let f = await fetch(
@@ -188,8 +188,7 @@ const FutureConference = (props) => {
             return response.json().then((data) => {
               if (data.message === "Meeting has not started yet") {
                 d[i]["url"] = "Ссылка не сгенерирована";
-              }
-             else if (
+              } else if (
                 data.status === 400 ||
                 data.status === 404 ||
                 data.status === 204 ||
@@ -197,11 +196,11 @@ const FutureConference = (props) => {
               ) {
                 d[i]["url"] = "delete";
               }
-             
-            //  else if (currUserRole==='SuperAdmin'){
-            //   console.log(currUserRole)
-            //     d[i]["url"] = "У вас нет доступа к ссылке на данную конференцию";
-            //   }
+
+              //  else if (currUserRole==='SuperAdmin'){
+              //   console.log(currUserRole)
+              //     d[i]["url"] = "У вас нет доступа к ссылке на данную конференцию";
+              //   }
             });
           } else {
             return response.text().then((text) => {
@@ -228,9 +227,9 @@ const FutureConference = (props) => {
       }
     }
     const indices = Array.from(arrD.keys());
-  //  indices.sort((a, b) => arrD[a].date.localeCompare(arrD[b].date));
-    indices.sort((a, b) => arrD[a].dateToString - (arrD[b].dateToString));
-    console.log(indices)
+    //  indices.sort((a, b) => arrD[a].date.localeCompare(arrD[b].date));
+    indices.sort((a, b) => arrD[a].dateToString - arrD[b].dateToString);
+    // console.log(indices)
     const sortedDate = indices.map((i) => arrD[i]);
     const sortedId = indices.map((i) => idNew[i]);
     const sortedusAl = indices.map((i) => usAlNew[i]);
@@ -243,7 +242,7 @@ const FutureConference = (props) => {
   const [load2, setLoad2] = useState(false);
   const [userAllowed, setUserAllowed] = useState([]);
   async function fetchAllData() {
-     const api = "https://api.ezmeets.live/v1/Meetings/GetAll";
+    const api = "https://api.ezmeets.live/v1/Meetings/GetAll";
     //const api = "https://api.ezmeets.live/v1/Meetings/GetScheduled";
     let token = sessionStorage.getItem("token");
 
@@ -256,7 +255,7 @@ const FutureConference = (props) => {
           localStorage.setItem("date", "");
           navigate("/login");
         } else {
-        //  Popup.alert("Проверьте правльность введенных данных");
+          //  Popup.alert("Проверьте правльность введенных данных");
         }
       });
     let res = await ax.data;
@@ -264,30 +263,32 @@ const FutureConference = (props) => {
     let d = [];
     let idd = [];
     let usAl = [];
-    const currUserRole = sessionStorage.getItem('roleUser')
+    const currUserRole = sessionStorage.getItem("roleUser");
     for (let i = 0; i < res.length; i++) {
       let findSameUser = res[i].allowedUsers.find((r) => r.userID === idUser);
-      if ((findSameUser !== undefined && findSameUser !== null)||currUserRole==='SuperAdmin') {
+      if (
+        (findSameUser !== undefined && findSameUser !== null) ||
+        currUserRole === "SuperAdmin"
+      ) {
         let dateCur = new Date(res[i].startTime);
         dateCur.setHours(dateCur.getHours() + 3);
-        const diff = (dateCur-new Date())/36000000
+        const diff = (dateCur - new Date()) / 36000000;
         // console.log(diff)
         // console.log((diff<0&& diff>-2)||(diff>0))
         if (res[i].hasEnded === false) {
-        if ((diff<0&& diff>-2)||(diff>0)){
-          // console.log(res);
-          d.push({
-            name: res[i].name,
-            date: dateCur.toLocaleString(),
-            participants: remove_duplicates_es6(res[i].allowedUsers).length,
-            url: "resURL",
-            dateToString: dateCur
-          });
-          idd.push(res[i].meetingID);
-          usAl.push(res[i].allowedUsers);
-        
+          if ((diff < 0 && diff > -2) || diff > 0) {
+            // console.log(res);
+            d.push({
+              name: res[i].name,
+              date: dateCur.toLocaleString(),
+              participants: remove_duplicates_es6(res[i].allowedUsers).length,
+              url: "resURL",
+              dateToString: dateCur,
+            });
+            idd.push(res[i].meetingID);
+            usAl.push(res[i].allowedUsers);
+          }
         }
-      }
       }
     }
 

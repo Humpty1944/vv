@@ -147,7 +147,7 @@
 }
 
 .fileContainer .uploadPictureContainer {
-  width: 25% !important;
+  width: 40% !important;
   margin: 5%;
   -ms-box-shadow: none !important;
   -o-box-shadow: none !important;
@@ -155,7 +155,7 @@
   -webkit-box-shadow: none !important;
   box-shadow: none !important;
   padding: 10px;
-  background: transparent;
+  background: transparent !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -163,7 +163,7 @@
   left: 40px !important;
   bottom: 120px !important;
 
-  border: 0px;
+  border: 0px !important;
   position: relative;
 }
 

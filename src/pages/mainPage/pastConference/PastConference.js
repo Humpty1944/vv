@@ -136,7 +136,7 @@ const PastConference = (props) => {
           let idd = [];
 
           for (let i = 0; i < r.length; i++) {
-            console.log(r[i].started);
+            // console.log(r[i].started);
             d.push({
               name: r[i].name,
               date: new Date(r[i].startTime).toLocaleString(),
@@ -158,9 +158,9 @@ const PastConference = (props) => {
             localStorage.setItem("date", "");
             navigate("/login");
           } else {
-            Popup.alert(
-              "Пожалуйста, подождите несколько минут и повторите запрос"
-            );
+            // Popup.alert(
+            //   "Пожалуйста, подождите несколько минут и повторите запрос"
+            // );
           }
         });
     } catch (e) {}

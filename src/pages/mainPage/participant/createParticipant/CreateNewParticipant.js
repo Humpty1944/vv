@@ -109,7 +109,8 @@ const CreateNewParticipant = (props) => {
   const [file, setFile] = useState();
   const [email, setEmail] = useState("");
   const [value, setValue] = useState([]);
-  const [regionName, setregionName] = useState("The North");
+  const [login, setLogin] = useState("");
+  // const [regionName, setregionName] = useState("The North");
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [roleUser, setRole] = useState("");
   const [id, setId] = useState("");
@@ -193,7 +194,7 @@ const CreateNewParticipant = (props) => {
     setEmail(user.email);
     setGroup([user.group]);
     setImageURL(user.avatarPath);
-
+    setLogin(user.userName);
     setValue([
       {
         value: user.group,
@@ -214,6 +215,7 @@ const CreateNewParticipant = (props) => {
       setEmail("");
       setFile(null);
       setGroup([]);
+      setLogin("");
       setRole("");
       setIsLoading(false);
     }
@@ -228,6 +230,7 @@ const CreateNewParticipant = (props) => {
       setFile(null);
       setGroup([]);
       setRole("");
+      setLogin("");
       setIsLoading(false);
     }
   }, [props.pageName]);
@@ -258,7 +261,7 @@ const CreateNewParticipant = (props) => {
   const handleCallbackEmail = (childData) => {
     setEmail(childData);
   };
-  const handleCallback = (childData) => {};
+
   const handleGroup = (childData) => {
     setGroup(group.concat(childData.label));
     setValue(childData);
@@ -278,6 +281,7 @@ const CreateNewParticipant = (props) => {
       })
         .then((response) => response.json())
         .then((responseJson) => {
+          console.log(responseJson);
           if (
             responseJson.status === 401 ||
             responseJson.status === 404 ||
@@ -319,7 +323,6 @@ const CreateNewParticipant = (props) => {
           }
         })
         .catch(function (error) {
-          console.log(error);
           if (error.response.status == 401) {
             sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
@@ -343,23 +346,28 @@ const CreateNewParticipant = (props) => {
       const api = "https://api.ezmeets.live/v1/Users/Update";
       let data = {
         id: id,
-        userName: email,
+        userName: login,
         fullName: fullname,
         email: email,
         group: group[0],
       };
+      const header = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+      // {
+      //   headers: { Authorization: `Bearer ${token}` },
+      // }
       axios
-        .put(api, data, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        .put(api, data, header)
         .then((res) => {
-          //console.log(res);
+          console.log(res);
         })
         .catch(function (error) {
+          console.log(error);
           if (error.response.status === 401) {
             sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
-            //navigate("/login");
+            navigate("/login");
           }
         });
     }
@@ -390,8 +398,8 @@ const CreateNewParticipant = (props) => {
     } else {
       updateUser();
     }
-    props.parentCallback("a");
-    window.location.reload(false);
+    // props.parentCallback("a");
+    //  window.location.reload(false);
   };
   const getPromotion = () => {
     const apiAdmin = "https://api.ezmeets.live/v1/Users/MakeAdmin?userID=" + id;
@@ -402,15 +410,12 @@ const CreateNewParticipant = (props) => {
     if (roleUser === "Модератор") {
       axios
         .post(apiAdmin, null)
-        .then((res) => {
-          console.log(res);
-        })
+        .then((res) => {})
         .catch(function (error) {
-          console.log();
           if (error.response.status === 401) {
             sessionStorage.setItem("token", "");
             localStorage.setItem("date", "");
-            //navigate("/login");
+            navigate("/login");
           }
         });
     }
