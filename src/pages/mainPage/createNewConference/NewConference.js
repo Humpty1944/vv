@@ -279,6 +279,7 @@ const NewConference = (props) => {
         }
       });
     await sleep(1000);
+    window.location.reload(false);
     props.parentCallback("a");
   }
   const postReq = async () => {
@@ -344,6 +345,7 @@ const NewConference = (props) => {
     let f = await res;
     console.log(f);
     // await sleep(1000);
+    window.location.reload(false);
     props.parentCallback("a");
   }
   function chooseAction() {

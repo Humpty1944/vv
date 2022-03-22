@@ -185,6 +185,13 @@ const ReportPage = (props) => {
     setData(dd);
     setIsLoading(false);
   }
+
+  //   - ERROR - что-то пошло не так
+  // - NOT_FOUND -
+  // - RECOGNIZED -
+  // - RECOGNIZED_MULT -
+  // - FOUND_OTHER -
+  // - FOUND_OTHER_MULT -
   const workWithLog = (connectionLogs) => {
     let res = "\n";
     let sumTime = 0;
@@ -201,13 +208,13 @@ const ReportPage = (props) => {
         leave = new Date(connectionLogs[i].dateTime);
         sumTime += leave - enter;
       }
+      const curNameNowe = connectionLogs[i].status;
 
-      if (resArray[connectionLogs[i].action] === undefined) {
-        const curNameNowe = connectionLogs[i].action;
-        resArray.push({ [connectionLogs[i].action]: 1 });
-        //resArray[connectionLogs[i].action] = 1;
+      if (!resArray[curNameNowe]) {
+        resArray[curNameNowe] = 0;
+        resArray[curNameNowe] = 1; //push(parseInt(1));
       } else {
-        resArray[connectionLogs[i].action] += 1;
+        resArray[curNameNowe] = parseInt(resArray[curNameNowe]) + parseInt(1);
       }
 
       if (connectionLogs[i].accuracy * 100 < 50) {
@@ -220,18 +227,17 @@ const ReportPage = (props) => {
       }
     }
 
-    const sumValues = (resArray) =>
-      Object.values(resArray).reduce((a, b) => a + b);
     // if (resArray.length <= 1) {
     //   sumCount = 1;
     // } else {
     //   sumCount = sumValues(resArray);
     // }
     console.log(resArray);
+
     for (const [key, value] of Object.entries(resArray)) {
       console.log(key);
       res +=
-        "\n" + key + ": " + Number((value / sumCount).toFixed(3)) * 100 + "%";
+        "\n" + key + ": " + Number((value / sumCount).toFixed(1)) * 100 + "%";
     }
     return [res, sumTime / 6000, accuracyProblems];
   };

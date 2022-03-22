@@ -238,6 +238,7 @@ const Settings = (props) => {
         })
         .then((res) => {
           //Popup.alert("Данные изменены");
+          window.location.reload(false);
           props.parentCallback("yes");
         });
     }
@@ -311,7 +312,8 @@ const Settings = (props) => {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
-          Popup.alert("Данные изменены");
+          // Popup.alert("Данные изменены");
+          window.location.reload(false);
           props.parentCallback("yes");
         });
     }
