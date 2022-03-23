@@ -378,8 +378,8 @@ const CreateNewParticipant = (props) => {
         "Content-Type": "application/json-patch+json",
       },
     };
-
-    props.parentCallback("a");
+    //window.location.reload(false);
+    // props.parentCallback("a");
   };
 
   const buttonCreateNewParticipant = () => {
@@ -392,7 +392,7 @@ const CreateNewParticipant = (props) => {
       updateUser();
     }
     props.parentCallback("a");
-    window.location.reload(false);
+    // window.location.reload(false);
   };
   const getPromotion = () => {
     const apiAdmin = "https://api.ezmeets.live/v1/Users/MakeAdmin?userID=" + id;
