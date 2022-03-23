@@ -45,14 +45,14 @@ const ReportPage = (props) => {
         sort: true,
       },
     },
-    {
-      name: "email",
-      label: "Почта",
-      options: {
-        filter: false,
-        sort: true,
-      },
-    },
+    // {
+    //   name: "email",
+    //   label: "Почта",
+    //   options: {
+    //     filter: false,
+    //     sort: true,
+    //   },
+    // },
     {
       name: "group",
       label: "Группа",
@@ -151,6 +151,7 @@ const ReportPage = (props) => {
         console.log(error);
       });
     let result = await response.data;
+    console.log(result);
     setConferenceName(result.name);
     setConferenceStart(new Date(result.startTime).toLocaleString());
     setConferenceParticipantsCount(result.usersAtMeeting.length);
@@ -162,9 +163,9 @@ const ReportPage = (props) => {
         result.usersAtMeeting[i].connectionLogs
       );
       dd.push({
-        fullName: result.usersAtMeeting[i].user.fullName,
-        email: result.usersAtMeeting[i].user.email,
-        group: result.usersAtMeeting[i].user.group,
+        fullName: result.usersAtMeeting[i].fullName,
+        // email: result.usersAtMeeting[i]..email,
+        group: result.usersAtMeeting[i].group,
         status: currTime[0],
         allTime: Number(sumTimeEnterLeave[1].toFixed(1)) + " мин",
         problems: currTime[2],
