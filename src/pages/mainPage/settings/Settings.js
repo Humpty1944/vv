@@ -306,8 +306,12 @@ const Settings = (props) => {
         console.log(e);
       }
     }
-    console.log(value);
-    if (value != null && value !== undefined && value !== "") {
+
+    if (
+      value.label !== null &&
+      value.label !== undefined &&
+      value.label !== ""
+    ) {
       axios
         .post(api_Group + value.label, null, {
           headers: { Authorization: `Bearer ${token}` },
