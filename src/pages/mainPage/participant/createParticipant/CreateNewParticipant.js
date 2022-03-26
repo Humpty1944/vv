@@ -192,20 +192,55 @@ const CreateNewParticipant = (props) => {
 
     setFullname(user.fullName);
     setEmail(user.email);
-    setGroup([user.group]);
+    let val = [];
+    console.log(user.groups.length);
+    for (let i = 0; i < user.groups.length; i++) {
+      console.log(user.groups[i].name);
+      val.push(user.groups[i].name);
+    }
+    setGroup(val);
+    val = [];
+    for (let i = 0; i < user.groups.length; i++) {
+      val.push({
+        value: user.groups[i].name,
+        label: user.groups[i].name,
+      });
+    }
+    setValue(val);
+    // setGroup(user.groups);
     setImageURL(user.avatarPath);
     setLogin(user.userName);
-    setValue([
-      {
-        value: user.group,
-        label: user.group,
-      },
-    ]);
+    // setValuesOfGroups(user.groups);
+    // setValue([
+    //   {
+    //     value: user.group,
+    //     label: user.group,
+    //   },
+    // ]);
     setRole(translate(roleaw));
     setId(user.id);
 
     setIsLoading(false);
   }
+  const setGroupsValues = (groups) => {
+    let val = [];
+    console.log(groups.length);
+    for (let i = 0; i < groups.length; i++) {
+      console.log(groups[i].name);
+      val.push(groups[i].name);
+    }
+    setGroup(val);
+  };
+  const setValuesOfGroups = (groups) => {
+    let val = [];
+    for (let i = 0; i < groups.length; i++) {
+      val.push({
+        value: groups[i].name,
+        label: groups[i].name,
+      });
+    }
+    setValue(val);
+  };
   useEffect(() => {
     if (props.pageName === "Update") {
       setIsLoadingFile(true);
@@ -263,8 +298,10 @@ const CreateNewParticipant = (props) => {
   };
 
   const handleGroup = (childData) => {
+    console.log(value);
     setGroup(group.concat(childData.label));
-    setValue(childData);
+    setValue(value.concat(childData.label));
+    console.log(value);
   };
   const addNewPhoto = () => {
     let token = sessionStorage.getItem("token");
@@ -342,7 +379,7 @@ const CreateNewParticipant = (props) => {
         userName: login,
         fullName: fullname,
         email: email,
-        group: group[0],
+        groups: group,
       };
       const header = {
         headers: { Authorization: `Bearer ${token}` },
@@ -428,7 +465,7 @@ const CreateNewParticipant = (props) => {
   async function loadOptions(search, loadedOptions) {
     let token = sessionStorage.getItem("token");
 
-    const api = "https://api.ezmeets.live/v1/Users/GetGroups";
+    const api = "https://api.ezmeets.live/v1/Groups/GetAll";
     let options = [];
 
     let a = await axios
@@ -440,11 +477,11 @@ const CreateNewParticipant = (props) => {
     let res = await a.data;
 
     let help = res.filter((n) => n);
-
+    console.log(help);
     for (let i = 0; i < help.length; i++) {
       options.push({
-        value: help[i],
-        label: help[i],
+        value: help[i].name,
+        label: help[i].name,
       });
     }
     let filteredOptions;
@@ -532,6 +569,7 @@ const CreateNewParticipant = (props) => {
                 Группа
               </p>
               <CreatableAsyncPaginate
+                isMulti
                 value={value}
                 styles={customStyles}
                 loadOptions={loadOptions}

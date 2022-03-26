@@ -399,7 +399,7 @@ const NewConference = (props) => {
   async function loadOptions(search, loadedOptions) {
     let token = sessionStorage.getItem("token");
 
-    const api = "https://api.ezmeets.live/v1/Users/GetGroups";
+    const api = "https://api.ezmeets.live/v1/Groups/GetAll";
     let options = [];
 
     let a = await axios
@@ -411,11 +411,11 @@ const NewConference = (props) => {
     let res = await a.data;
 
     let help = res.filter((n) => n);
-
+    console.log(help[0]);
     for (let i = 0; i < help.length; i++) {
       options.push({
-        value: help[i],
-        label: help[i],
+        value: help[i].name,
+        label: help[i].name,
       });
     }
     let filteredOptions;
