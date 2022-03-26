@@ -189,7 +189,7 @@ const CreateNewParticipant = (props) => {
     let user = await response.data;
     let roleaw = await responseRole.data;
     // let blob = await fetch(user.avatarPath).then((r) => r.blob());
-
+    console.log("asasa");
     setFullname(user.fullName);
     setEmail(user.email);
     let val = [];
@@ -198,7 +198,8 @@ const CreateNewParticipant = (props) => {
       console.log(user.groups[i].name);
       val.push(user.groups[i].name);
     }
-    setGroup(val);
+    console.log(val);
+    // setGroup(val);
     val = [];
     for (let i = 0; i < user.groups.length; i++) {
       val.push({
@@ -206,41 +207,16 @@ const CreateNewParticipant = (props) => {
         label: user.groups[i].name,
       });
     }
-    setValue(val);
-    // setGroup(user.groups);
+    // setValue(val);
     setImageURL(user.avatarPath);
     setLogin(user.userName);
-    // setValuesOfGroups(user.groups);
-    // setValue([
-    //   {
-    //     value: user.group,
-    //     label: user.group,
-    //   },
-    // ]);
+
     setRole(translate(roleaw));
     setId(user.id);
 
     setIsLoading(false);
   }
-  const setGroupsValues = (groups) => {
-    let val = [];
-    console.log(groups.length);
-    for (let i = 0; i < groups.length; i++) {
-      console.log(groups[i].name);
-      val.push(groups[i].name);
-    }
-    setGroup(val);
-  };
-  const setValuesOfGroups = (groups) => {
-    let val = [];
-    for (let i = 0; i < groups.length; i++) {
-      val.push({
-        value: groups[i].name,
-        label: groups[i].name,
-      });
-    }
-    setValue(val);
-  };
+
   useEffect(() => {
     if (props.pageName === "Update") {
       setIsLoadingFile(true);
@@ -298,10 +274,10 @@ const CreateNewParticipant = (props) => {
   };
 
   const handleGroup = (childData) => {
-    console.log(value);
+    console.log(childData);
     setGroup(group.concat(childData.label));
-    setValue(value.concat(childData.label));
-    console.log(value);
+    setValue(value.concat(childData));
+    console.log(group);
   };
   const addNewPhoto = () => {
     let token = sessionStorage.getItem("token");
@@ -477,7 +453,7 @@ const CreateNewParticipant = (props) => {
     let res = await a.data;
 
     let help = res.filter((n) => n);
-    console.log(help);
+    console.log(res);
     for (let i = 0; i < help.length; i++) {
       options.push({
         value: help[i].name,
