@@ -139,7 +139,7 @@ const CreateNewParticipant = (props) => {
     window.addEventListener("load", handleLoading);
     return () => window.removeEventListener("load", handleLoading);
   }, []);
-
+  const [isModerator, setModerator] = useState(false);
   async function fetchData() {
     const api1 = "https://api.ezmeets.live/v1/Users/Get";
     const apiRole = "https://api.ezmeets.live/v1/Users/GetUserRole";
@@ -208,10 +208,14 @@ const CreateNewParticipant = (props) => {
       });
     }
     setValue(val);
+
     setImageURL(user.avatarPath);
     setLogin(user.userName);
 
     setRole(translate(roleaw));
+    if (roleUser === "Модератор") {
+      setModerator(true);
+    }
     setId(user.id);
 
     setIsLoading(false);
@@ -387,7 +391,7 @@ const CreateNewParticipant = (props) => {
       addNewPhoto();
     }
 
-    if (roleUser !== "Участник") {
+    if (roleUser !== "Участник" && !isModerator) {
       getPromotion();
     }
     let config = {
