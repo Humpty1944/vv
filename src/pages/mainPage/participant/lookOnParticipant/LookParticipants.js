@@ -129,6 +129,7 @@ const LookParticipants = (props) => {
     const api = "https://api.ezmeets.live/v1/Users/GetAll";
     //setData();
     let token = sessionStorage.getItem("token");
+    console.log(token);
     let work = await axios
       .get(api, { headers: { Authorization: `Bearer ${token}` } })
       .catch(function (error) {
