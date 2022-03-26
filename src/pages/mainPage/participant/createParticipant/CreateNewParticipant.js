@@ -199,7 +199,7 @@ const CreateNewParticipant = (props) => {
       val.push(user.groups[i].name);
     }
     console.log(val);
-    // setGroup(val);
+    setGroup(val);
     val = [];
     for (let i = 0; i < user.groups.length; i++) {
       val.push({
@@ -207,7 +207,7 @@ const CreateNewParticipant = (props) => {
         label: user.groups[i].name,
       });
     }
-    // setValue(val);
+    setValue(val);
     setImageURL(user.avatarPath);
     setLogin(user.userName);
 
@@ -275,9 +275,15 @@ const CreateNewParticipant = (props) => {
 
   const handleGroup = (childData) => {
     console.log(childData);
-    setGroup(group.concat(childData.label));
-    setValue(value.concat(childData));
+    let val = [];
+    for (let i = 0; i < childData.length; i++) {
+      console.log(childData[i].label);
+      val.push(childData[i].label);
+    }
+    setGroup(val);
+    setValue(childData);
     console.log(group);
+    console.log(value);
   };
   const addNewPhoto = () => {
     let token = sessionStorage.getItem("token");
